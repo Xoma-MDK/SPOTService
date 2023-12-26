@@ -25,12 +25,12 @@
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.7" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="DataStorage\Configurations\" />
-    <Folder Include="Infrastructure\HostedServices\" />
   </ItemGroup>
 
 </Project>
