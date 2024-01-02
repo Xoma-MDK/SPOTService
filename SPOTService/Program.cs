@@ -1,6 +1,8 @@
-
+using NLog.Web;
 using SPOTService.DataStorage;
 using SPOTService.Extensions;
+using SPOTService.Infrastructure.HostedServices;
+
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -19,6 +21,10 @@ void ConfigureHost()
 
     int port = configuration.GetValue<int>("AppSettings:Port");
     builder.WebHost.UseKestrel(options => options.ListenAnyIP(port));
+    builder.Logging.ClearProviders();
+    builder.Logging.SetMinimumLevel
+                    (LogLevel.Trace);
+    builder.Host.UseNLog();
 }
 
 
@@ -27,6 +33,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     services.AddSwaggerGen();
     services.AddControllers();
+    services.AddHostedService<TelegramBot>();
 }
 
 void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
