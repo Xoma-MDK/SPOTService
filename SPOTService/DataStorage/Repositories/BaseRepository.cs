@@ -8,20 +8,15 @@ namespace ControlManagerLib.DataStorage.Repositories
     /// <summary>
     /// Базовая реализация паттерна IRepository
     /// </summary>
-    public abstract class BaseRepository<TEntity, TContext> : IRepository<TEntity>, IDisposable
+    /// <remarks>
+    /// Базовый конструктор класса
+    /// </remarks>
+    /// <param name="context">Экземпляр класса, отнаследованного от DbContext</param>
+    public abstract class BaseRepository<TEntity, TContext>(TContext context) : IRepository<TEntity>, IDisposable
         where TEntity : class, IEntity
         where TContext : DbContext
     {
-        protected readonly TContext _context;
-
-        /// <summary>
-        /// Базовый конструктор класса
-        /// </summary>
-        /// <param name="context">Экземпляр класса, отнаследованного от DbContext</param>
-        public BaseRepository(TContext context)
-        {
-            _context = context;
-        }
+        protected readonly TContext _context = context;
 
         /// <summary>
         /// Получить одну запись из таблицы по id
@@ -80,9 +75,9 @@ namespace ControlManagerLib.DataStorage.Repositories
             return entity;
         }
 
-        public void Dispose()
-        {
+        public void Dispose(){
             _context.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

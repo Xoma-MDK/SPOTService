@@ -6,13 +6,9 @@ using SPOTService.Extensions;
 
 namespace SPOTService.DataStorage
 {
-    public partial class MainContext : DbContext
+    public partial class MainContext(ILogger<MainContext> logger) : DbContext
     {
-        private readonly ILogger<MainContext> _logger;
-        public MainContext(ILogger<MainContext> logger)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<MainContext> _logger = logger;
 
         public void Migrate()
         {
