@@ -1,5 +1,6 @@
 
 using SPOTService.DataStorage;
+using SPOTService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -34,6 +35,7 @@ void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseDeveloperExceptionPage();
     }
+    app.SeedData();
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreService v1"));
 
