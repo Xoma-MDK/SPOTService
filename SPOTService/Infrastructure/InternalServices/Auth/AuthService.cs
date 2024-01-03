@@ -6,6 +6,7 @@ using SPOTService.Dto.User;
 using SPOTService.Helpers;
 using SPOTService.Infrastructure.InternalServices.Auth.ENums;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace SPOTService.Infrastructure.InternalServices.Auth
@@ -88,11 +89,21 @@ namespace SPOTService.Infrastructure.InternalServices.Auth
                 Login = userInput.Login,
                 Name = userInput.Name,
                 Patronomyc = userInput.Patronomyc,
-                PasswordHash = HashUtil.HashPassowd(userInput.Password) 
+                PasswordHash = HashUtil.HashPassowd(userInput.Password),
+                RoleId = userInput.RoleId,
             };
 
             await _mainContext.AddAsync(newUser);
-            await _mainContext.SaveChangesAsync();
+            try
+            {
+                await _mainContext.SaveChangesAsync();
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
 
             string accessToken = JwtUtils.GetToken(newUser, AuthOptions.accessLifetime, JwtTypes.Access);
             string refreshToken = JwtUtils.GetToken(newUser, AuthOptions.refreshLifetime, JwtTypes.Refresh);

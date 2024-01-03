@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using NLog.Web;
 using SPOTService.DataStorage;
+using SPOTService.DataStorage.Repositories;
 using SPOTService.Extensions;
 using SPOTService.Infrastructure.HostedServices;
 using SPOTService.Infrastructure.InternalServices.Auth;
@@ -28,7 +30,7 @@ void ConfigureHost()
     builder.WebHost.UseKestrel(options => options.ListenAnyIP(port));
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel
-                    (LogLevel.Trace);
+                    (LogLevel.Information);
     builder.Host.UseNLog();
 }
 
@@ -36,7 +38,33 @@ void ConfigureHost()
 void ConfigureServices(IServiceCollection services)
 {
     services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-    services.AddSwaggerGen();
+    services.AddSwaggerGen(opt => {
+        opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please enter token",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "bearer"
+        }
+        );
+        opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            Array.Empty<string>()
+            }
+        });
+    });
+
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -62,8 +90,22 @@ void ConfigureServices(IServiceCollection services)
         });
 
     services.AddAuthorization();
-    services.AddControllers();
+    services.AddControllers().AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+    services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAllOrigins",
+            builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+    });
+
     services.AddHostedService<TelegramBot>();
+    services.AddScoped<IAuthService, AuthService>();
+    services.AddScoped<UserRepository>();
 }
 
 void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
@@ -74,23 +116,15 @@ void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
     }
     app.SeedData();
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoreService v1"));
-
-    app.UseCors(builder => builder.AllowAnyOrigin());
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SPOTService v1"));
+    app.UseCors("AllowAllOrigins");
     app.UseRouting();
+    app.UseAuthorization();
     app.UseEndpoints(endpoints =>
     {
         endpoints.MapControllers();
     });
 
-}
-
-
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
 void AddDbContext(IServiceCollection services)
