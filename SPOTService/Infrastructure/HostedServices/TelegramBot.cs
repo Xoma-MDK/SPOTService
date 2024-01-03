@@ -9,16 +9,28 @@ namespace SPOTService.Infrastructure.HostedServices
     public class TelegramBot : BackgroundService
     {
         // Это клиент для работы с Telegram Bot API, который позволяет отправлять сообщения, управлять ботом, подписываться на обновления и многое другое.
-        private static ITelegramBotClient _botClient;
+        private readonly ITelegramBotClient _botClient;
 
         // Это объект с настройками работы бота. Здесь мы будем указывать, какие типы Update мы будем получать, Timeout бота и так далее.
-        private static ReceiverOptions _receiverOptions;
+        private readonly ReceiverOptions _receiverOptions;
 
         private readonly ILogger<TelegramBot> _logger;
 
         public TelegramBot(ILogger<TelegramBot> logger)
         {
             _logger = logger;
+            _botClient = new TelegramBotClient("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU"); // Присваиваем нашей переменной значение, в параметре передаем Token, полученный от BotFather
+            _receiverOptions = new ReceiverOptions // Также присваем значение настройкам бота
+            {
+                AllowedUpdates =
+                // Тут указываем типы получаемых Update`ов, о них подробнее расказано тут https://core.telegram.org/bots/api#update
+                [
+                UpdateType.Message, // Сообщения (текст, фото/видео, голосовые/видео сообщения и т.д.)
+            ],
+                // Параметр, отвечающий за обработку сообщений, пришедших за то время, когда ваш бот был оффлайн
+                // True - не обрабатывать, False (стоит по умолчанию) - обрабаывать
+                ThrowPendingUpdates = true,
+            };
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,18 +41,6 @@ namespace SPOTService.Infrastructure.HostedServices
         private async Task Main()
         {
 
-            _botClient = new TelegramBotClient("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU"); // Присваиваем нашей переменной значение, в параметре передаем Token, полученный от BotFather
-            _receiverOptions = new ReceiverOptions // Также присваем значение настройкам бота
-            {
-                AllowedUpdates = new[] // Тут указываем типы получаемых Update`ов, о них подробнее расказано тут https://core.telegram.org/bots/api#update
-                {
-                UpdateType.Message, // Сообщения (текст, фото/видео, голосовые/видео сообщения и т.д.)
-            },
-                // Параметр, отвечающий за обработку сообщений, пришедших за то время, когда ваш бот был оффлайн
-                // True - не обрабатывать, False (стоит по умолчанию) - обрабаывать
-                ThrowPendingUpdates = true,
-            };
-
             using var cts = new CancellationTokenSource();
 
             // UpdateHander - обработчик приходящих Update`ов
@@ -48,7 +48,7 @@ namespace SPOTService.Infrastructure.HostedServices
             _botClient.StartReceiving(UpdateHandler, ErrorHandler, _receiverOptions, cts.Token); // Запускаем бота
 
             var me = await _botClient.GetMeAsync(); // Создаем переменную, в которую помещаем информацию о нашем боте.
-            _logger.LogInformation($"{me.FirstName} запущен!");
+            _logger.LogInformation("{} запущен!", me.FirstName);
 
             //await Task.Delay(-1); // Устанавливаем бесконечную задержку, чтобы наш бот работал постоянно
         }
@@ -69,15 +69,15 @@ namespace SPOTService.Infrastructure.HostedServices
                             var user = message!.From;
 
                             // Выводим на экран то, что пишут нашему боту, а также небольшую информацию об отправителе
-                            _logger.LogInformation($"{user!.FirstName} ({user.Id}) написал сообщение: {message.Text}");
+                            _logger.LogInformation("{} ({}) написал сообщение: {}", user!.FirstName, user.Id, message.Text);
 
                             // Chat - содержит всю информацию о чате
                             var chat = message.Chat;
                             await botClient.SendTextMessageAsync(
-                                chat.Id,
-                                message.Text!, // отправляем то, что написал пользователь
-                                replyToMessageId: message.MessageId // по желанию можем поставить этот параметр, отвечающий за "ответ" на сообщение
-                                );
+                                chat.Id, 
+                                message.Text!, 
+                                replyToMessageId: message.MessageId, // по желанию можем поставить этот параметр, отвечающий за "ответ" на сообщение
+                                cancellationToken: cancellationToken);
 
                             return;
                         }
@@ -85,7 +85,7 @@ namespace SPOTService.Infrastructure.HostedServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError("Error: {}", ex.Message);
             }
         }
 
