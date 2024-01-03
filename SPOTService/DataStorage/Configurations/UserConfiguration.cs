@@ -12,7 +12,7 @@ namespace SPOTService.DataStorage.Configurations
             entity.HasKey(x => x.Id);
 
             entity.Property(e => e.Id).IsRequired(true);
-            entity.Property(e => e.SurName).IsRequired(true);
+            entity.Property(e => e.Surname).IsRequired(true);
             entity.Property(e => e.Name).IsRequired(true);
             entity.Property(e => e.Login).IsRequired(true);
             entity.Property(e => e.PasswordHash).IsRequired(true);
