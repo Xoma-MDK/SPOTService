@@ -13,6 +13,6 @@ namespace SPOTService.DataStorage.Entities
         [JsonIgnore]
         public virtual IEnumerable<RoleRules>? RoleRules { get; set; }
         [JsonIgnore]
-        public virtual User? User { get; set; }
+        public virtual IEnumerable<User>? Users { get; set; }
     }
 }

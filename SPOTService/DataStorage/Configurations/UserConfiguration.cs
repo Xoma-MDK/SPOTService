@@ -19,8 +19,8 @@ namespace SPOTService.DataStorage.Configurations
             entity.Property(e => e.RoleId).IsRequired(true);
 
             entity.HasOne(e => e.Role)
-                  .WithOne(e => e.User)
-                  .HasForeignKey<User>(e => e.RoleId)
+                  .WithMany(e => e.Users)
+                  .HasForeignKey(e => e.RoleId)
                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
