@@ -7,6 +7,8 @@ using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
 using SPOTService.Dto.User;
 using SPOTService.Infrastructure.InternalServices.Auth;
+using SPOTService.Infrastructure.InternalServices.Auth.Models;
+using System.Net;
 
 namespace SPOTService.Controllers
 {
@@ -25,7 +27,8 @@ namespace SPOTService.Controllers
         private readonly MainContext _mainContext = mainContext;
         private readonly IMapper _mapper = mapper;
         private readonly UserRepository _repository = repository;
-
+        
+        [ProducesResponseType(typeof(UserOutputDto), 200)]
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
@@ -46,11 +49,11 @@ namespace SPOTService.Controllers
             }
 
         }
-
+        
+        [ProducesResponseType(typeof(UserOutputDto), 200)]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginInputDto userLogin)
         {
-
             try
             {
                 var tokens = await _authService.Login(userLogin);
@@ -65,7 +68,8 @@ namespace SPOTService.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        
+        [ProducesResponseType(typeof(UserOutputDto), 200)]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserInputDto userInput)
         {
@@ -77,6 +81,39 @@ namespace SPOTService.Controllers
                 userOutputDto.Tokens = tokens;
                 userOutputDto.Role = userOutputDto.Role;
                 return Ok(userOutputDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [ProducesResponseType(typeof(TokensResponse), 200)]
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
+        {
+            try
+            {
+                if (Request.Headers.TryGetValue("authorization", out var token))
+                {
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        _logger.LogInformation("Token {}", token!);
+                        var tokens = await _authService.Refresh(token.ToString().Split(' ')[1]);
+                        return Ok(tokens);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Refresh token not found or empty");
+                        return BadRequest("Refresh token not found or empty");
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Refresh token not found or empty");
+                    return BadRequest("Refresh token not found or empty");
+                }
             }
             catch (Exception ex)
             {

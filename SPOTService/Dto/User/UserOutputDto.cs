@@ -1,4 +1,4 @@
-﻿using SPOTService.DataStorage.Entities;
+﻿using SPOTService.Dto.Roles;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
 
 namespace SPOTService.Dto.User
@@ -11,7 +11,7 @@ namespace SPOTService.Dto.User
         public string? Patronomyc { get; set; }
         public required string Login { get; set; }
         public int RoleId { get; set; }
-        public Role? Role { get; set; }
+        public RoleOutputDto? Role { get; set; }
         public TokensResponse? Tokens { get; set; }
     }
 }
