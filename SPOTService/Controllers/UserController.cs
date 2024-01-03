@@ -7,6 +7,7 @@ using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
 using SPOTService.Dto.User;
 using SPOTService.Infrastructure.InternalServices.Auth;
+using SPOTService.Infrastructure.InternalServices.Auth.Constants;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
 using System.Net;
 
@@ -29,7 +30,7 @@ namespace SPOTService.Controllers
         private readonly UserRepository _repository = repository;
         
         [ProducesResponseType(typeof(UserOutputDto), 200)]
-        [Authorize]
+        [Authorize(AuthPolicy.AccessPolicy)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {

@@ -2,7 +2,7 @@
 {
     public class TokensResponse
     {
-        public string? Access;
-        public string? Refresh;
+        public string? Access { get; set; }
+        public string? Refresh { get; set; }
     }
 }

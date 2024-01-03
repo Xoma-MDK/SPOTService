@@ -119,6 +119,7 @@ void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SPOTService v1"));
     app.UseCors("AllowAllOrigins");
     app.UseRouting();
+    app.UseAuthentication();
     app.UseAuthorization();
     app.UseEndpoints(endpoints =>
     {
