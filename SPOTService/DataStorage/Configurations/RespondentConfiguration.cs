@@ -16,8 +16,8 @@ namespace SPOTService.DataStorage.Configurations
             entity.Property(e => e.TelegramId).IsRequired(true);
 
             entity.HasOne(e => e.Group)
-                  .WithOne(e => e.Respondent)
-                  .HasForeignKey<Respondent>(e => e.GroupId)
+                  .WithMany(e => e.Respondents)
+                  .HasForeignKey(e => e.GroupId)
                   .OnDelete(DeleteBehavior.Cascade);
 
         }

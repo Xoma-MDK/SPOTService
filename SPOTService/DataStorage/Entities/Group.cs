@@ -8,7 +8,7 @@ namespace SPOTService.DataStorage.Entities
         public required string Title { get; set; }
 
         [JsonIgnore]
-        public virtual Respondent? Respondent { get; set; }
+        public virtual IEnumerable<Respondent>? Respondents { get; set; }
         [JsonIgnore]
         public virtual IEnumerable<Survey>? Surveys { get; set; }
     }

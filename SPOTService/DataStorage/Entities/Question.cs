@@ -11,7 +11,7 @@ namespace SPOTService.DataStorage.Entities
         public bool IsOpen { get; set; }
 
         [JsonIgnore]
-        public virtual Answer? Answer { get; set; }
+        public virtual IEnumerable<Answer>? Answers { get; set; }
 
         [JsonIgnore]
         public virtual IEnumerable<AnswerVariant>? AnswerVariants { get; set; }

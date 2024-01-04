@@ -14,6 +14,6 @@ namespace SPOTService.DataStorage.Entities
         [JsonIgnore]
         public virtual Group? Group { get; set; }
         [JsonIgnore]
-        public virtual Answer? Answer { get; set; }
+        public virtual IEnumerable<Answer>? Answers { get; set; }
     }
 }
