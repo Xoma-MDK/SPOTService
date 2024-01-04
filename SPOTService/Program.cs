@@ -71,9 +71,9 @@ void ConfigureServices(IServiceCollection services)
         options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
+            ValidateIssuer = false,
             ValidIssuer = AuthOptions.ISSUER,
-            ValidateAudience = true,
+            ValidateAudience = false,
             ValidAudience = AuthOptions.AUDIENCE,
             ValidateLifetime = true,
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),

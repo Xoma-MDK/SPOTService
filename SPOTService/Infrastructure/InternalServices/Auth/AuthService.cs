@@ -11,27 +11,42 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace SPOTService.Infrastructure.InternalServices.Auth
 {
-    public class AuthService(MainContext mainContext) : IAuthService
+    public class AuthService(MainContext mainContext, ILogger<AuthService> logger) : IAuthService
     {
         private readonly MainContext _mainContext = mainContext;
+        private readonly ILogger<AuthService> _logger = logger;
 
         public async Task<TokensResponse> Login(UserLoginInputDto userLogin)
         {
-            var user = await _mainContext.Users.Where(u => u.Login == userLogin.Login).FirstOrDefaultAsync() ?? throw new Exception("User not found");
-            if (!HashUtil.VerifyPassword(userLogin.Password, user.PasswordHash))
-                throw new Exception("Invalid login or password");
-
-            string accessToken = JwtUtils.GetToken(user, AuthOptions.accessLifetime, JwtTypes.Access);
-            string refreshToken = JwtUtils.GetToken(user, AuthOptions.refreshLifetime, JwtTypes.Refresh);
-
-            user.RefreshTokenHash = HashUtil.HashToken(refreshToken);
-            await _mainContext.SaveChangesAsync();
-
-            return new TokensResponse
+            try
             {
-                Access = accessToken,
-                Refresh = refreshToken,
-            };
+                _logger.LogInformation("Try Login user");
+                var user = await _mainContext.Users.Where(u => u.Login == userLogin.Login).FirstOrDefaultAsync() ?? throw new Exception("User not found");
+                if (!HashUtil.VerifyPassword(userLogin.Password, user.PasswordHash))
+                    throw new Exception("Invalid login or password");
+
+                string accessToken = JwtUtils.GetToken(user, AuthOptions.accessLifetime, JwtTypes.Access);
+                string refreshToken = JwtUtils.GetToken(user, AuthOptions.refreshLifetime, JwtTypes.Refresh);
+
+                user.RefreshTokenHash = HashUtil.HashToken(refreshToken);
+                await _mainContext.SaveChangesAsync();
+
+                return new TokensResponse
+                {
+                    Access = accessToken,
+                    Refresh = refreshToken,
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Crit: {}", ex.Message);
+                return new TokensResponse
+                {
+                    Access = "",
+                    Refresh = "",
+                };
+            }
+            
         }
 
         public async Task Logout(long userId)
