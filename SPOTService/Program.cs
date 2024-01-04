@@ -106,6 +106,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddHostedService<TelegramBot>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<UserRepository>();
+    services.AddScoped<GroupRepository>();
 }
 
 void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)
