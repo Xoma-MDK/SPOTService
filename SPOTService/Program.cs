@@ -63,6 +63,10 @@ void ConfigureServices(IServiceCollection services)
             Array.Empty<string>()
             }
         });
+        var filePath = Path.Combine(AppContext.BaseDirectory, "SPOTService.xml");
+        opt.SwaggerDoc("v1", new OpenApiInfo { Title = "SPOTService", Version = "v1" });
+        opt.IncludeXmlComments(filePath);
+
     });
 
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

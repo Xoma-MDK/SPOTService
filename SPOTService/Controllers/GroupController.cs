@@ -12,6 +12,12 @@ using Telegram.Bot.Types;
 
 namespace SPOTService.Controllers
 {
+    /// <summary>
+    /// Контроллер запросов к сущности "группы"
+    /// </summary>
+    /// <param name="logger">Логгер</param>
+    /// <param name="mapper">Маппер</param>
+    /// <param name="repository">Репозиторий "групп"</param>
     [ApiController]
     [Route("groups")]
     public class GroupController(
@@ -23,7 +29,15 @@ namespace SPOTService.Controllers
         private readonly ILogger<GroupController> _logger = logger;
         private readonly IMapper _mapper = mapper;
         private readonly GroupRepository _repository = repository;
-        
+
+        // GET <GroupController>/{id}
+        /// <summary>
+        /// Получить группу по идентификатору
+        /// </summary>
+        /// <remarks>Запрос для получения группы по идентификатору</remarks>
+        /// <param name="id">Идентификатор группы</param>
+        /// <response code="200">Успешно получена группа по идентификатору</response>
+        /// <response code="204">Группа с указанным идентификатором отсутствует</response>
         [ProducesResponseType(typeof(GroupOutputDto), 200)]
         [Authorize(AuthPolicy.AccessPolicy)]
         [HttpGet("{id}")]
@@ -45,7 +59,12 @@ namespace SPOTService.Controllers
             }
 
         }
-
+        // GET: <GroupController>
+        /// <summary>
+        /// Получить все группы
+        /// </summary>
+        /// <remarks>Запрос для получения всех групп</remarks>
+        /// <response code="200">Успешно получены все группы</response>
         [ProducesResponseType(typeof(IEnumerable<GroupOutputDto>), 200)]
         [Authorize(AuthPolicy.AccessPolicy)]
         [HttpGet]
