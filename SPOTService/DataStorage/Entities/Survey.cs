@@ -23,7 +23,7 @@ namespace SPOTService.DataStorage.Entities
         [JsonIgnore]
         public virtual IEnumerable<Answer>? Answers { get; set; }
         [JsonIgnore]
-        public virtual IEnumerable<Question>? Question { get; set; }
+        public virtual IEnumerable<Question>? Questions { get; set; }
         [JsonIgnore]
         public virtual IEnumerable<SurveyQuestion>? SurveyQuestions { get; set; }
     }

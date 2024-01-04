@@ -102,11 +102,14 @@ void ConfigureServices(IServiceCollection services)
                        .AllowAnyHeader();
             });
     });
-
+    //Сервисы и репозитории
     services.AddHostedService<TelegramBot>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<UserRepository>();
     services.AddScoped<GroupRepository>();
+    services.AddScoped<SurveyRepository>();
+    services.AddScoped<QuestionRepository>();
+    services.AddScoped<AnswerVariantRepository>();
 }
 
 void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)

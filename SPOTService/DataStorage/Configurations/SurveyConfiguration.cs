@@ -18,7 +18,7 @@ namespace SPOTService.DataStorage.Configurations
             entity.Property(x => x.GroupId).IsRequired(true);
             entity.Property(x => x.UserId).IsRequired(true);
 
-            entity.HasMany(x => x.Question)
+            entity.HasMany(x => x.Questions)
                   .WithMany(x => x.Surveys)
                   .UsingEntity<SurveyQuestion>(
                 x => x.HasOne(x => x.Question).WithMany(x => x.SurveyQuestions),

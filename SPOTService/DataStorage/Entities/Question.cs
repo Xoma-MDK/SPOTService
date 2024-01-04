@@ -22,5 +22,10 @@ namespace SPOTService.DataStorage.Entities
         public virtual IEnumerable<Survey>? Surveys { get; set; }
         [JsonIgnore]
         public virtual IEnumerable<SurveyQuestion>? SurveyQuestions { get; set; }
+        public override string ToString()
+        {
+            return $"\nTitle: {Title},\n" +
+                $" IsOpen: {IsOpen}, \n";
+        }
     }
 }

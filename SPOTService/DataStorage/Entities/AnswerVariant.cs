@@ -13,6 +13,9 @@ namespace SPOTService.DataStorage.Entities
         public virtual IEnumerable<Question>? Questions { get; set; }
         [JsonIgnore]
         public virtual IEnumerable<QuestionAnswerVariant>? QuestionAnswerVariants { get; set;}
-
+        public override string ToString()
+        {
+            return $"Title: {Title}";
+        }
     }
 }
