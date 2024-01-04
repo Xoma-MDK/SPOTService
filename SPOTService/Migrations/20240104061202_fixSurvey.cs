@@ -5,7 +5,9 @@
 namespace SPOTService.Migrations
 {
     /// <inheritdoc />
+#pragma warning disable IDE1006 // Стили именования
     public partial class fixSurvey : Migration
+#pragma warning restore IDE1006 // Стили именования
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
