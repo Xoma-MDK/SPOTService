@@ -26,13 +26,13 @@ namespace SPOTService.DataStorage.Configurations
                 );
             
             entity.HasOne(x => x.Group)
-                  .WithOne(x => x.Survey)
-                  .HasForeignKey<Survey>(x => x.GroupId)
+                  .WithMany(x => x.Surveys)
+                  .HasForeignKey(x => x.GroupId)
                   .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(x => x.User)
-                  .WithOne(x => x.Survey)
-                  .HasForeignKey<Survey>(x => x.UserId)
+                  .WithMany(x => x.Surveys)
+                  .HasForeignKey(x => x.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
 
         }

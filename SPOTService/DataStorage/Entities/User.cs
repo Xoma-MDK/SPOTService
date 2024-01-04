@@ -15,7 +15,7 @@ namespace SPOTService.DataStorage.Entities
         public int RoleId { get; set; }
 
         [JsonIgnore]
-        public virtual Survey? Survey { get; set; }
+        public virtual IEnumerable<Survey>? Surveys { get; set; }
         [JsonIgnore]
         public virtual Role? Role { get; set; }
     }

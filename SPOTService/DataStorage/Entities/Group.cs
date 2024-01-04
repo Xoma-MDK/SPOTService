@@ -10,6 +10,6 @@ namespace SPOTService.DataStorage.Entities
         [JsonIgnore]
         public virtual Respondent? Respondent { get; set; }
         [JsonIgnore]
-        public virtual Survey? Survey { get; set; }
+        public virtual IEnumerable<Survey>? Surveys { get; set; }
     }
 }
