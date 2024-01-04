@@ -9,7 +9,7 @@ namespace SPOTService.DataStorage.Entities
         public string? Name { get; set; }
         public string? Patronomic {  get; set; }
         public int GroupId { get; set; }
-        public int TelegramId { get; set; }
+        public long TelegramId { get; set; }
 
         [JsonIgnore]
         public virtual Group? Group { get; set; }

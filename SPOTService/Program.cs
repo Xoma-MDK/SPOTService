@@ -107,7 +107,8 @@ void ConfigureServices(IServiceCollection services)
             });
     });
     //Сервисы и репозитории
-    services.AddHostedService<TelegramBot>();
+    //services.AddHostedService<TelegramBot>();
+    services.AddHostedService<BotService>();
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<UserRepository>();
     services.AddScoped<GroupRepository>();
