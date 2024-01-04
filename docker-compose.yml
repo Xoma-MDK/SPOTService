@@ -1,0 +1,30 @@
+version: '3.4'
+
+services:
+  spot_service:
+    build:
+      context: .
+      dockerfile: SPOTService/Dockerfile
+    ports:
+      - 15009:15009
+    networks:
+      - postgres
+  postgres:
+    image: postgres:16.0
+    environment:
+      POSTGRES_DB: "SPOT"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "1234"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - 5434:5432
+    volumes:
+      - ../2. Init Database:/docker-entrypoint-initdb.d
+      - habrdb-data:/var/lib/postgresql/data
+    networks:
+      - postgres
+volumes:
+  habrdb-data:
+networks:
+  postgres:
+    driver: bridge
