@@ -5,6 +5,7 @@ using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
 using SPOTService.Dto.Surveys;
 using SPOTService.Infrastructure.InternalServices.Auth.Constants;
+using Telegram.Bot.Types;
 
 namespace SPOTService.Controllers
 {
@@ -92,6 +93,34 @@ namespace SPOTService.Controllers
             var surveyOutputDto = _mapper.Map<Survey, SurveyOutputDto>(surveyEntity);
             
             return Ok(surveyOutputDto);
+        }
+
+        // PUT api/<SurveyController>/{id}
+        /// <summary>
+        /// Обновить опрос по идентификатору
+        /// </summary>
+        /// <remarks>Запрос для обновления опроса по идентификатору</remarks>
+        /// <param name="id">Идентификатор опрос</param>
+        /// <response code="200">Успешно обновлен опрос по идентификатору</response>
+        /// <response code="204">Опрос с указанным идентификатором отсутствует</response>
+        [ProducesResponseType(typeof(SurveyOutputDto), StatusCodes.Status200OK)]
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAsync(int id,
+            [FromBody] SurveyInputDto surveyInput)
+        {
+            Survey survey = _mapper.Map<SurveyInputDto, Survey>(surveyInput);
+            if (survey == null)
+            {
+                return NoContent();
+            }
+            var updatedSurvey = await _repository.UpdateAsync(id, survey);
+            if (updatedSurvey == null)
+            {
+                return NoContent();
+            }
+            SurveyOutputDto surveyOutput = _mapper.Map<Survey, SurveyOutputDto>(updatedSurvey);
+            return Ok(surveyOutput);
         }
     }
 }
