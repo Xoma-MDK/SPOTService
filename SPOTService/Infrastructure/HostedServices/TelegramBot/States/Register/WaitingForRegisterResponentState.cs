@@ -5,22 +5,20 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
 
-namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class WaitingForRegisterResponentState(MainContext mainContext) : IAsyncState
+    public class WaitingForRegisterResponentState(MainContext mainContext) : AAsyncState, IAsyncState
     {
-        private TelegramBotClient _botClient;
-        private IAsyncStateMachine _stateMachine;
-        private readonly MainContext _mainContext = mainContext;
-        private long _userId;
-        private long _chatId;
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
+            _mainContext = mainContext;
             if (_mainContext.Respondents.Any(x => x.TelegramId == _userId))
             {
                 await _stateMachine.ChangeStateAsync(new SurveyIsReadyState(_stateMachine.MainContext));

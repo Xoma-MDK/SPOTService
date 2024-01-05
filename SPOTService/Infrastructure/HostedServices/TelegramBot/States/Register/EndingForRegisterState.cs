@@ -6,22 +6,21 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Telegram.Bot.Types.ReplyMarkups;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
 
-namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class EndingForRegisterState(MainContext mainContext) : IAsyncState
+    public class EndingForRegisterState(MainContext mainContext) : AAsyncState, IAsyncState
     {
-        private TelegramBotClient _botClient;
-        private IAsyncStateMachine _stateMachine;
-        private readonly MainContext _mainContext = mainContext;
-        private long _userId;
-        private long _chatId;
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
+            _mainContext = mainContext;
+
             var groups = mainContext.Groups.ToList();
             var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
             var keyboard = new InlineKeyboardMarkup(buttons);
@@ -35,7 +34,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
             var keyboard = new InlineKeyboardMarkup(buttons);
             await _botClient.SendTextMessageAsync
                 (
-                _chatId, 
+                _chatId,
                 "Пожалуйста используй кнопки!\n" +
                 "Выбери свою группу:",
                 replyMarkup: keyboard

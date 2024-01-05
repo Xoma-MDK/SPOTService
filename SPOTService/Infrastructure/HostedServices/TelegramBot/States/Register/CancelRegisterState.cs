@@ -4,12 +4,10 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class SurveyIsReadyState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class CancelRegisterState(MainContext mainContext) : AAsyncState, IAsyncState
     {
-
-
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -17,7 +15,6 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
             _mainContext = mainContext;
-            await _botClient.SendTextMessageAsync(_chatId, "Вы готовы проходить опросы!");
         }
 
         public Task ExecuteAsync(Message message)

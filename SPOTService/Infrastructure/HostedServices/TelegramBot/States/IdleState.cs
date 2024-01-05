@@ -1,6 +1,7 @@
 ﻿using SPOTService.DataStorage.Entities;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 

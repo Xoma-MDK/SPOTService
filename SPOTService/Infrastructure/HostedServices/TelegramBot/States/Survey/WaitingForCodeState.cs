@@ -2,7 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
 {
     public class WaitingForCodeState : IAsyncState
     {
