@@ -5,7 +5,7 @@ using NLog.Web;
 using SPOTService.DataStorage;
 using SPOTService.DataStorage.Repositories;
 using SPOTService.Extensions;
-using SPOTService.Infrastructure.HostedServices;
+using SPOTService.Infrastructure.HostedServices.TelegramBot;
 using SPOTService.Infrastructure.InternalServices.Auth;
 using SPOTService.Infrastructure.InternalServices.Auth.Constants;
 using SPOTService.Infrastructure.InternalServices.Auth.ENums;

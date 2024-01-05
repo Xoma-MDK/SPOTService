@@ -2,27 +2,28 @@
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot;
-using SPOTService.Infrastructure.HostedServices.enums;
 using Telegram.Bot.Types;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Exceptions;
 using SPOTService.DataStorage;
 using SPOTService.DataStorage.Entities;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
 
-namespace SPOTService.Infrastructure.HostedServices
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
-    // Добавьте новые состояния, если необходимо
-
     public class BotService(ILogger<BotService> logger, MainContext mainContext) : BackgroundService
     {
         private readonly TelegramBotClient _botClient = new("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU");
         private readonly Dictionary<long, BotState> _userStates = new Dictionary<long, BotState>();
+        private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = new Dictionary<long, IAsyncStateMachine>();
         private readonly ILogger<BotService> _logger = logger;
         private readonly ReceiverOptions _receiverOptions = new()
         {
             AllowedUpdates =
         [
-        UpdateType.Message,
+            UpdateType.Message,
             UpdateType.CallbackQuery
         ],
             ThrowPendingUpdates = true,
@@ -82,7 +83,14 @@ namespace SPOTService.Infrastructure.HostedServices
             {
                 var chatId = message.Chat.Id;
                 var userId = message.From!.Id;
-
+                
+                if (!_userStateMachine.ContainsKey(userId)) 
+                {
+                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, mainContext);
+                    await _userStateMachine[userId].ChangeStateAsync(new IdleState());
+                }
+                await _userStateMachine[userId].ProcessAsync(message);
+                /*
                 switch (_userStates.GetValueOrDefault(userId))
                 {
                     case BotState.Idle:
@@ -130,7 +138,7 @@ namespace SPOTService.Infrastructure.HostedServices
                     case BotState.SurveyInProgress:
                         //await ProcessSurveyResponse(chatId, userId, message.Text!);
                         break;
-                }
+                }*/
             }
         }
 
@@ -139,6 +147,8 @@ namespace SPOTService.Infrastructure.HostedServices
             var userId = callbackQuery.From.Id;
             var chatId = callbackQuery.Message!.Chat.Id;
 
+            await _userStateMachine[userId].ProcessAsync(callbackQuery);
+            /*
             switch (_userStates.GetValueOrDefault(userId))
             {
                 case BotState.RegisterResponent:
@@ -152,7 +162,7 @@ namespace SPOTService.Infrastructure.HostedServices
                             case "anon":
                                 {
                                     _userStates[userId] = BotState.WaitingForRegisterResponent;
-                                    var groups = mainContext.Groups.ToList(); 
+                                    var groups = mainContext.Groups.ToList();
                                     var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
                                     var keyboard = new InlineKeyboardMarkup(buttons);
                                     await _botClient.SendTextMessageAsync(chatId, "Выбери свою группу:", replyMarkup: keyboard);
@@ -182,7 +192,7 @@ namespace SPOTService.Infrastructure.HostedServices
                 case BotState.SurveyInProgress:
                     //await ProcessSurveyResponse(chatId, userId, callbackQuery.Data!);
                     break;
-            }
+            }*/
         }
 
 

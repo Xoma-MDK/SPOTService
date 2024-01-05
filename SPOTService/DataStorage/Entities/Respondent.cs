@@ -8,7 +8,7 @@ namespace SPOTService.DataStorage.Entities
         public string? Surname { get; set; }
         public string? Name { get; set; }
         public string? Patronomic {  get; set; }
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
         public long TelegramId { get; set; }
 
         [JsonIgnore]

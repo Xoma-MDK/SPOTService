@@ -12,7 +12,6 @@ namespace SPOTService.DataStorage.Configurations
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Id).IsRequired(true);
-            entity.Property(e => e.GroupId).IsRequired(true);
             entity.Property(e => e.TelegramId).IsRequired(true);
 
             entity.HasOne(e => e.Group)

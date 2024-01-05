@@ -1,4 +1,4 @@
-﻿namespace SPOTService.Infrastructure.HostedServices.enums
+﻿namespace SPOTService.Infrastructure.HostedServices.TelegramBot.enums
 {
     public enum BotState
     {
