@@ -10,6 +10,7 @@ namespace SPOTService.Profiles
         {
             CreateMap<Survey, SurveyOutputDto>();
             CreateMap<SurveyInputDto, Survey>();
+            CreateMap<SurveyUpdateDto, Survey>();
         }
     }
 }

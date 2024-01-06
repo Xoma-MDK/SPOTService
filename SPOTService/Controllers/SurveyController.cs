@@ -108,9 +108,10 @@ namespace SPOTService.Controllers
         [Authorize(AuthPolicy.AccessPolicy)]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAsync(int id,
-            [FromBody] SurveyInputDto surveyInput)
+            [FromBody] SurveyUpdateDto surveyUpdate)
         {
-            Survey survey = _mapper.Map<SurveyInputDto, Survey>(surveyInput);
+            try { 
+            Survey survey = _mapper.Map<SurveyUpdateDto, Survey>(surveyUpdate);
             if (survey == null)
             {
                 return NoContent();
@@ -122,6 +123,12 @@ namespace SPOTService.Controllers
             }
             SurveyOutputDto surveyOutput = _mapper.Map<Survey, SurveyOutputDto>(updatedSurvey);
             return Ok(surveyOutput);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Crit: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

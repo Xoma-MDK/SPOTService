@@ -9,6 +9,7 @@ namespace SPOTService.Profiles
         public QuestionProfile() { 
             CreateMap<Question, QuestionOutputDto>();
             CreateMap<QuestionIntputDto, Question>();
+            CreateMap<QuestionUpdateDto, Question>();
         }
     }
 }

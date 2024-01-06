@@ -10,6 +10,7 @@ namespace SPOTService.Profiles
         {
             CreateMap<AnswerVariant, AnswerVariantOutputDto>();
             CreateMap<AnswerVariantInputDto, AnswerVariant>();
+            CreateMap<AnswerVariantUpdateDto, AnswerVariant>();
         }
     }
 }
