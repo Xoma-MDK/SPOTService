@@ -111,25 +111,6 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 
             await _userStateMachine[userId].ProcessAsync(callbackQuery);
         }
-
-        private async Task AskQuestions(long chatId, long userId)
-        {
-
-            var questions = _mainContext.Surveys.FirstOrDefault(s => s.Id == 3)!.Questions!.ToList(); // Замените на ваш способ получения вопросов из базы данных
-
-            foreach (var question in questions)
-            {
-                await _botClient.SendTextMessageAsync(chatId, question.Title);
-
-                if (question.IsOpen == false)
-                {
-                    var options = question.AnswerVariants!.ToList();
-                    var buttons = options.Select(o => InlineKeyboardButton.WithCallbackData(o.Title, o.Id.ToString()));
-                    var keyboard = new InlineKeyboardMarkup(buttons);
-                    await _botClient.SendTextMessageAsync(chatId, "Выберите ответ:", replyMarkup: keyboard);
-                }
-            }
-        }
     }
 
 }
