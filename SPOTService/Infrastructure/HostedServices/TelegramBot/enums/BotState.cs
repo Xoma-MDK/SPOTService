@@ -1,11 +1,19 @@
-﻿namespace SPOTService.Infrastructure.HostedServices.TelegramBot.enums
+﻿using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
+
+namespace SPOTService.Infrastructure.HostedServices.TelegramBot.enums
 {
     public enum BotState
     {
-        Idle = 0,
-        WaitingForCode = 1,
-        WaitingForRegisterResponent = 2,
-        SurveyInProgress = 3,
-        RegisterResponent = 4
+        IdleState,
+        WaitingForRegisterResponentState,
+        RegisterResponentState,
+        WaitingEnterSurnameState,
+        WaitingEnterNameState,
+        WaitingEnterPatronomycState,
+        EndingForRegisterState, 
+        MainMenuState,
+        WaitingForCodeState,
+        AskQuestionsState,
     }
 }

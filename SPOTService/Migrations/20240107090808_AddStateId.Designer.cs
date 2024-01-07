@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SPOTService.DataStorage;
@@ -11,9 +12,11 @@ using SPOTService.DataStorage;
 namespace SPOTService.Migrations
 {
     [DbContext(typeof(MainContext))]
-    partial class MainContextModelSnapshot : ModelSnapshot
+    [Migration("20240107090808_AddStateId")]
+    partial class AddStateId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,9 +163,6 @@ namespace SPOTService.Migrations
 
                     b.Property<string>("Surname")
                         .HasColumnType("text");
-
-                    b.Property<long>("TelegramChatId")
-                        .HasColumnType("bigint");
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");

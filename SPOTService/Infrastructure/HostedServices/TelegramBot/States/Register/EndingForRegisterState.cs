@@ -8,6 +8,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Telegram.Bot.Types.ReplyMarkups;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
@@ -21,7 +22,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _chatId = _stateMachine.ChatId;
             _mainContext = mainContext;
 
-            var groups = mainContext.Groups.ToList();
+            var groups = _mainContext.Groups.ToList();
             var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
             var keyboard = new InlineKeyboardMarkup(buttons);
             await _botClient.SendTextMessageAsync(_chatId, "Выбери свою группу:", replyMarkup: keyboard);
@@ -29,7 +30,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 
         public async Task ExecuteAsync(Message message)
         {
-            var groups = mainContext.Groups.ToList();
+            var groups = _mainContext.Groups.ToList();
             var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
             var keyboard = new InlineKeyboardMarkup(buttons);
             await _botClient.SendTextMessageAsync
@@ -46,7 +47,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             if (query.Data!.StartsWith("Group"))
             {
                 var groupId = int.Parse(query.Data.Split(':')[1]);
-                var respondent = _mainContext.Respondents.First(r => r.TelegramId == _userId);
+                var respondent = _mainContext.Respondents.FirstOrDefault(r => r.TelegramId == _userId);
                 if (respondent != null)
                 {
                     respondent.GroupId = groupId;
@@ -58,13 +59,14 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                     respondent = new Respondent()
                     {
                         GroupId = groupId,
-                        TelegramId = _userId
+                        TelegramId = _userId,
+                        TelegramChatId = _chatId
                     };
-                    var respondentEntity = await mainContext.AddAsync(respondent);
-                    await mainContext.SaveChangesAsync();
+                    var respondentEntity = await _mainContext.AddAsync(respondent);
+                    await _mainContext.SaveChangesAsync();
                 }
                 await _botClient.AnswerCallbackQueryAsync(query.Id);
-                await _stateMachine.ChangeStateAsync(new SurveyIsReadyState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
             }
         }
 

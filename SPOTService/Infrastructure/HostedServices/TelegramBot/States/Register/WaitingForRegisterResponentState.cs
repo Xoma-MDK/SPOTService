@@ -1,12 +1,10 @@
-﻿using SPOTService.DataStorage.Entities;
-using SPOTService.DataStorage;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
+﻿using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
+using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
@@ -21,7 +19,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _mainContext = mainContext;
             if (_mainContext.Respondents.Any(x => x.TelegramId == _userId))
             {
-                await _stateMachine.ChangeStateAsync(new SurveyIsReadyState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
             }
             else
             {

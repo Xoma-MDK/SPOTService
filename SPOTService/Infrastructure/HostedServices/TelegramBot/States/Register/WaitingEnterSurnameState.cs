@@ -29,7 +29,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                     var respondent = new Respondent()
                     {
                         Surname = message.Text,
-                        TelegramId = _userId
+                        TelegramId = _userId,
+                        TelegramChatId = _chatId
                     };
                     await _mainContext.AddAsync(respondent);
                     await _mainContext.SaveChangesAsync();

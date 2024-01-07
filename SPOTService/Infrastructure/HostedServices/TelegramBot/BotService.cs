@@ -13,12 +13,10 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
-    public class BotService(ILogger<BotService> logger, MainContext mainContext) : BackgroundService
+    public class BotService(ILogger<BotService> _logger, MainContext _mainContext) : BackgroundService
     {
         private readonly TelegramBotClient _botClient = new("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU");
-        private readonly Dictionary<long, BotState> _userStates = new Dictionary<long, BotState>();
         private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = new Dictionary<long, IAsyncStateMachine>();
-        private readonly ILogger<BotService> _logger = logger;
         private readonly ReceiverOptions _receiverOptions = new()
         {
             AllowedUpdates =
@@ -31,6 +29,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await RestoreBotStateAsync();
             _botClient.StartReceiving(
             UpdateHandler,
             ErrorHandler,
@@ -38,6 +37,18 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             stoppingToken);
             var me = await _botClient.GetMeAsync(stoppingToken);
             _logger.LogInformation("{} запущен!", me.FirstName);
+        }
+        private async Task RestoreBotStateAsync()
+        {
+            var respondents = _mainContext.Respondents.ToList();
+            foreach (var respondent in respondents)
+            {
+                if (!_userStateMachine.ContainsKey(respondent.TelegramId))
+                {
+                    _userStateMachine[respondent.TelegramId] = new AsyncStateMachine(respondent.TelegramId, respondent.TelegramChatId, _botClient, _mainContext);
+                    await _userStateMachine[respondent.TelegramId].RestoreStateAsync((int)respondent.StateId!);
+                }
+            }
         }
         private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
@@ -86,59 +97,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
                 
                 if (!_userStateMachine.ContainsKey(userId)) 
                 {
-                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, mainContext);
+                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, _mainContext);
                     await _userStateMachine[userId].ChangeStateAsync(new IdleState());
                 }
                 await _userStateMachine[userId].ProcessAsync(message);
-                /*
-                switch (_userStates.GetValueOrDefault(userId))
-                {
-                    case BotState.Idle:
-                        {
-                            if (message.Text == "/enter_code")
-                            {
-                                _userStates[userId] = BotState.WaitingForCode;
-                                await _botClient.SendTextMessageAsync(chatId, "Отправьте код опроса");
-                            }
-                            break;
-                        }
-                    case BotState.WaitingForCode:
-                        if (message.Text == "2eeqw")
-                        {
-                            if (mainContext.Respondents.Any(x => x.TelegramId == userId))
-                            {
-                                _userStates[userId] = BotState.SurveyInProgress;
-                                await _botClient.SendTextMessageAsync(chatId, "Опрос начат. Ответьте на вопросы.");
-                                await AskQuestions(chatId, userId);
-                            }
-                            else
-                            {
-                                _userStates[userId] = BotState.RegisterResponent;
-                                var inlineKeyboard = new InlineKeyboardMarkup(
-                                   new List<InlineKeyboardButton[]>()
-                                   {
-                                        new InlineKeyboardButton[]
-                                        {
-                                            InlineKeyboardButton.WithCallbackData("Зарегистрироваться!", "reg"),
-                                            InlineKeyboardButton.WithCallbackData("Анонимно!", "anon"),
-                                        },
-                                   });
-                                await _botClient.SendTextMessageAsync(
-                                    chatId,
-                                    "Хотите ли вы зарегистрироваться?\n" +
-                                    "Или желаете пройти опрос анонимно?",
-                                    replyMarkup: inlineKeyboard);
-                            }
-                        }
-                        else
-                        {
-                            await _botClient.SendTextMessageAsync(chatId, "Введите код для начала опроса.");
-                        }
-                        break;
-                    case BotState.SurveyInProgress:
-                        //await ProcessSurveyResponse(chatId, userId, message.Text!);
-                        break;
-                }*/
             }
         }
 
@@ -148,76 +110,12 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             var chatId = callbackQuery.Message!.Chat.Id;
 
             await _userStateMachine[userId].ProcessAsync(callbackQuery);
-            /*
-            switch (_userStates.GetValueOrDefault(userId))
-            {
-                case BotState.RegisterResponent:
-                    {
-                        switch (callbackQuery.Data)
-                        {
-                            case "reg":
-                                {
-                                    break;
-                                }
-                            case "anon":
-                                {
-                                    _userStates[userId] = BotState.WaitingForRegisterResponent;
-                                    var groups = mainContext.Groups.ToList();
-                                    var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
-                                    var keyboard = new InlineKeyboardMarkup(buttons);
-                                    await _botClient.SendTextMessageAsync(chatId, "Выбери свою группу:", replyMarkup: keyboard);
-                                    await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                    break;
-                                }
-                        }
-                        break;
-                    }
-                case BotState.WaitingForRegisterResponent:
-                    {
-                        if (callbackQuery.Data!.StartsWith("Group"))
-                        {
-                            var groupId = int.Parse(callbackQuery.Data.Split(':')[1]);
-                            var respondent = new Respondent()
-                            {
-                                GroupId = groupId,
-                                TelegramId = userId
-                            };
-                            var respondentEntity = mainContext.Add(respondent);
-                            await mainContext.SaveChangesAsync();
-                            await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                            _userStates[userId] = BotState.WaitingForCode;
-                        }
-                        break;
-                    }
-                case BotState.SurveyInProgress:
-                    //await ProcessSurveyResponse(chatId, userId, callbackQuery.Data!);
-                    break;
-            }*/
-        }
-
-
-
-        private async Task ProcessSurveyResponse(long chatId, long userId, string answer)
-        {
-            var userResponse = new Answer
-            {
-
-            };
-
-            mainContext.Add(userResponse);
-            await mainContext.SaveChangesAsync();
-
-            // Здесь можно отправить следующий вопрос или закончить опрос
-            // Пример: await _botClient.SendTextMessageAsync(chatId, "Следующий вопрос?");
-
-            // Если опрос завершен, вернем бота в состояние ожидания кода
-            _userStates[userId] = BotState.Idle;
         }
 
         private async Task AskQuestions(long chatId, long userId)
         {
 
-            var questions = mainContext.Surveys.FirstOrDefault(s => s.Id == 3)!.Questions!.ToList(); // Замените на ваш способ получения вопросов из базы данных
+            var questions = _mainContext.Surveys.FirstOrDefault(s => s.Id == 3)!.Questions!.ToList(); // Замените на ваш способ получения вопросов из базы данных
 
             foreach (var question in questions)
             {
@@ -231,7 +129,6 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
                     await _botClient.SendTextMessageAsync(chatId, "Выберите ответ:", replyMarkup: keyboard);
                 }
             }
-            _userStates[userId] = BotState.Idle;
         }
     }
 

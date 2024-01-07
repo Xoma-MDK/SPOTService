@@ -11,6 +11,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces
         MainContext MainContext { get; }
 
         Task ChangeStateAsync(IAsyncState newState);
+        Task RestoreStateAsync(int id);
         Task ProcessAsync(Message message);
         Task ProcessAsync(CallbackQuery query);
     }

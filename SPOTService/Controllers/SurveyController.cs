@@ -73,27 +73,35 @@ namespace SPOTService.Controllers
         public async Task<IActionResult> PostAsync(
             [FromBody] SurveyInputDto surveyInput)
         {
-            _logger.LogInformation("Try map SurveyInputDto to Survey");
-            _logger.LogDebug("SurveyInputDto: {}", surveyInput.ToString());
-            
-            var survey = _mapper.Map<SurveyInputDto,Survey>(surveyInput);
-            if (survey == null)
+            try
             {
-                _logger.LogWarning("Fail map SurveyInputDto to Survey");
-                return BadRequest("Fail map SurveyInputDto to Survey");
-            }
-            if (survey.UserId == 0) return BadRequest("User id can't be 0");
-            if (survey.GroupId == 0) return BadRequest("Group id can't be 0");
-            var surveyEntity = await _repository.AddAsync(survey!);
-            if (surveyEntity == null)
-            {
-                _logger.LogError("Fail add Survey to DB");
-                return BadRequest("Fail add Survey to DB");
-            }
+                _logger.LogDebug("Try map SurveyInputDto to Survey");
+                _logger.LogDebug("SurveyInputDto: {}", surveyInput.ToString());
 
-            var surveyOutputDto = _mapper.Map<Survey, SurveyOutputDto>(surveyEntity);
-            
-            return Ok(surveyOutputDto);
+                var survey = _mapper.Map<SurveyInputDto, Survey>(surveyInput);
+                if (survey == null)
+                {
+                    _logger.LogError("Fail map SurveyInputDto to Survey");
+                    return BadRequest("Fail map SurveyInputDto to Survey");
+                }
+                if (survey.UserId == 0) return BadRequest("User id can't be 0");
+                if (survey.GroupId == 0) return BadRequest("Group id can't be 0");
+                var surveyEntity = await _repository.AddAsync(survey!);
+                if (surveyEntity == null)
+                {
+                    _logger.LogError("Fail add Survey to DB");
+                    return BadRequest("Fail add Survey to DB");
+                }
+
+                var surveyOutputDto = _mapper.Map<Survey, SurveyOutputDto>(surveyEntity);
+
+                return Ok(surveyOutputDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Crit: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
 
         // PUT api/<SurveyController>/{id}
@@ -102,6 +110,7 @@ namespace SPOTService.Controllers
         /// </summary>
         /// <remarks>Запрос для обновления опроса по идентификатору</remarks>
         /// <param name="id">Идентификатор опрос</param>
+        /// <param name="surveyUpdate">Опрос</param>
         /// <response code="200">Успешно обновлен опрос по идентификатору</response>
         /// <response code="204">Опрос с указанным идентификатором отсутствует</response>
         [ProducesResponseType(typeof(SurveyOutputDto), StatusCodes.Status200OK)]
@@ -114,12 +123,14 @@ namespace SPOTService.Controllers
             Survey survey = _mapper.Map<SurveyUpdateDto, Survey>(surveyUpdate);
             if (survey == null)
             {
-                return NoContent();
+                    _logger.LogError("Fail map SurveyUpdateDto to Survey");
+                    return BadRequest("Fail map SurveyUpdateDto to Survey");
             }
             var updatedSurvey = await _repository.UpdateAsync(id, survey);
             if (updatedSurvey == null)
             {
-                return NoContent();
+                    _logger.LogError("Fail update Survey to DB");
+                    return BadRequest("Fail update Survey to DB");
             }
             SurveyOutputDto surveyOutput = _mapper.Map<Survey, SurveyOutputDto>(updatedSurvey);
             return Ok(surveyOutput);
