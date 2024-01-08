@@ -38,7 +38,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
                              new KeyboardButton("Пройти опрос"),
                         },
                 }
-            );
+            )
+            { 
+                ResizeKeyboard = true
+            };
             await _botClient.SendTextMessageAsync(
                 _chatId,
                 "Добро пожаловать!\n" +

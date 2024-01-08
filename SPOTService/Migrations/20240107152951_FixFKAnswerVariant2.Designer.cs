@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SPOTService.DataStorage;
@@ -11,9 +12,11 @@ using SPOTService.DataStorage;
 namespace SPOTService.Migrations
 {
     [DbContext(typeof(MainContext))]
-    partial class MainContextModelSnapshot : ModelSnapshot
+    [Migration("20240107152951_FixFKAnswerVariant2")]
+    partial class FixFKAnswerVariant2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,13 +192,6 @@ namespace SPOTService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Role", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Title = "admin"
-                        });
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.RoleRules", b =>
@@ -353,7 +349,7 @@ namespace SPOTService.Migrations
                     b.HasOne("SPOTService.DataStorage.Entities.AnswerVariant", "AnswerVariant")
                         .WithMany("Answers")
                         .HasForeignKey("AnswerVariantId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("SPOTService.DataStorage.Entities.Question", "Question")
                         .WithMany("Answers")

@@ -14,6 +14,7 @@ namespace SPOTService.DataStorage.Configurations
             entity.Property(e => e.Id).IsRequired(true);
             entity.Property(e => e.SurveyId).IsRequired(true);
             entity.Property(e => e.QuestionId).IsRequired(true);
+            entity.Property(e => e.AnswerVariantId).IsRequired(false);
             
 
             entity.HasOne(e => e.Survey)

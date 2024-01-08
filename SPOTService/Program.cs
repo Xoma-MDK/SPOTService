@@ -82,7 +82,14 @@ void ConfigureServices(IServiceCollection services)
             ValidateLifetime = true,
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
             ValidateIssuerSigningKey = true,
+            SaveSigninToken = false,
+            LifetimeValidator = (before, expires, token, param) =>
+            {
+                // Пользовательская логика проверки времени жизни токена
+                return expires > DateTime.UtcNow;
+            }
         };
+        
     }
     );
 

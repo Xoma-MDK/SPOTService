@@ -39,7 +39,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                              new KeyboardButton("Отмена!"),
                         },
                 }
-            );
+            )
+            {
+                ResizeKeyboard = true
+            };
             await _botClient.SendTextMessageAsync(_chatId,"Отправь мне код опроса.\n", replyMarkup: replyKeyboard);
         }
 
@@ -50,6 +53,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
                 return;
             }
+            _mainContext.ChangeTracker.Clear();
             var survay = _mainContext.Surveys.Where(s => s.AccessCode == message.Text!.Trim()).FirstOrDefault();
             if (survay != null)
             {

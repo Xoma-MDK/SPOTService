@@ -8,7 +8,7 @@ namespace SPOTService.DataStorage.Entities
         public int QuestionId { get; set; }
         public int SurveyId {  get; set; }
         public int RespondentId { get; set; }
-        public int AnswerVariantId { get; set; }
+        public int? AnswerVariantId { get; set; }
         public string? OpenAnswer { get; set; }
 
         [JsonIgnore]
