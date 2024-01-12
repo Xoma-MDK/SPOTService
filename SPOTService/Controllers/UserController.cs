@@ -71,7 +71,7 @@ namespace SPOTService.Controllers
                 var tokens = await _authService.Login(userLogin);
                 var user = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Login == userLogin.Login);
                 var userOutputDto = _mapper.Map<User, UserOutputDto>(user!);
-                userOutputDto.Tokens = tokens;
+                userOutputDto!.Tokens = tokens;
                 return Ok(userOutputDto);
             }
             catch (Exception ex)

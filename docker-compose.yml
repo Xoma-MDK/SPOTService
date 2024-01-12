@@ -1,12 +1,18 @@
 version: '3.4'
 
 services:
-  spot_service:
+  spot_back:
     build:
       context: .
       dockerfile: SPOTService/Dockerfile
+    networks:
+      - postgres
+  spot_front:
+    build:
+      context: .
+      dockerfile: react-spot-frontend/Dockerfile
     ports:
-      - 15009:15009
+      - 3000:3000
     networks:
       - postgres
   postgres:
@@ -23,6 +29,7 @@ services:
       - habrdb-data:/var/lib/postgresql/data
     networks:
       - postgres
+
 volumes:
   habrdb-data:
 networks:

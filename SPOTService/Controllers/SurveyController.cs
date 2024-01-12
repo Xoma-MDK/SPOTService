@@ -104,7 +104,7 @@ namespace SPOTService.Controllers
             }
         }
 
-        // PUT api/<SurveyController>/{id}
+        // PUT <SurveyController>/{id}
         /// <summary>
         /// Обновить опрос по идентификатору
         /// </summary>
@@ -140,6 +140,29 @@ namespace SPOTService.Controllers
                 _logger.LogCritical("Crit: {}", ex.Message);
                 return BadRequest(ex.Message);
             }
+        }
+        // DELETE <SurveyController>/{id}
+        /// <summary>
+        /// Удалить опрос по идентификатору
+        /// </summary>
+        /// <remarks>Метод для удаления опроса по идентификатору</remarks>
+        /// <param name="id">Идентификатор опроса</param>
+        /// <response code="200">Успешно удален опрос по идентификатору</response>
+        /// <response code="204">Опрос с указанным идентификатором отсутствует</response>
+        [ProducesResponseType(typeof(IEnumerable<SurveyOutputDto>), StatusCodes.Status200OK)]
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            Survey? survey = await _repository.GetAsync(id);
+            if (survey == null)
+            {
+                return NoContent();
+            }
+            await _repository.DeleteAsync(id);
+            return Ok((await _repository.GetAllAsync())
+                .Select(_mapper.Map<Survey, SurveyOutputDto>)
+                .ToList());
         }
     }
 }
