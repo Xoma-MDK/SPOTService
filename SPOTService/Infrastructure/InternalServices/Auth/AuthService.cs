@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SPOTService.DataStorage;
 using SPOTService.DataStorage.Entities;
 using SPOTService.Dto.User;
 using SPOTService.Helpers;
 using SPOTService.Infrastructure.InternalServices.Auth.ENums;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace SPOTService.Infrastructure.InternalServices.Auth
@@ -49,11 +47,13 @@ namespace SPOTService.Infrastructure.InternalServices.Auth
             
         }
 
-        public async Task Logout(long userId)
+        public async Task Logout(string token)
         {
-            
+            JwtSecurityTokenHandler jwtHandler = new();
+            JwtSecurityToken jwtToken = jwtHandler.ReadJwtToken(token) ?? throw new Exception("Can not read token");
+            var userId = (jwtToken.Claims.FirstOrDefault(claim => claim.Type == JwtClaimTypes.UserId)?.Value) ?? throw new Exception("Uid not found");
 
-            var user = await _mainContext.Users.Where(u => u.Id == userId).FirstOrDefaultAsync() ?? throw new Exception("User not found");
+            var user = await _mainContext.Users.Where(u => u.Id == int.Parse(userId)).FirstOrDefaultAsync() ?? throw new Exception("User not found");
             user.RefreshTokenHash = null;
 
             await _mainContext.SaveChangesAsync();
@@ -116,7 +116,7 @@ namespace SPOTService.Infrastructure.InternalServices.Auth
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                _logger.LogDebug("Error: {}", ex.Message);
             }
 
 

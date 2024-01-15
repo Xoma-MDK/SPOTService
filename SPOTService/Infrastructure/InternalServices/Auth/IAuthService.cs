@@ -9,6 +9,6 @@ namespace SPOTService.Infrastructure.InternalServices.Auth
         Task<TokensResponse> Login(UserLoginInputDto userLogin);
         Task<TokensResponse> Register(UserInputDto userInput);
         Task<TokensResponse> Refresh(string refreshToken);
-        Task Logout(long userId);
+        Task Logout(string token);
     }
 }

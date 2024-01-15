@@ -145,5 +145,31 @@ namespace SPOTService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        // POST <SurveyController>/logout
+        /// <summary>
+        /// Выйти из системы
+        /// </summary>
+        /// <remarks>Запрос для выхода из системы</remarks>
+        /// <response code="200">Успешно созданы токены авторизации пользователя по Refresh токену</response>
+        /// <response code="400">Ошибка при создании токенов авторизации пользователя по Refresh токену</response>
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                if (Request.Headers.TryGetValue("authorization", out var token))
+                {
+
+                    await _authService.Logout(token.ToString().Split(' ')[1]);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

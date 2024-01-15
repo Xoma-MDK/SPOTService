@@ -5,7 +5,6 @@ using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
 using SPOTService.Dto.Surveys;
 using SPOTService.Infrastructure.InternalServices.Auth.Constants;
-using Telegram.Bot.Types;
 
 namespace SPOTService.Controllers
 {
@@ -134,6 +133,42 @@ namespace SPOTService.Controllers
             }
             SurveyOutputDto surveyOutput = _mapper.Map<Survey, SurveyOutputDto>(updatedSurvey);
             return Ok(surveyOutput);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Crit: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
+        // PUT <SurveyController>/{id}
+        /// <summary>
+        /// Обновить активность опроса по идентификатору
+        /// </summary>
+        /// <remarks>Запрос для обновления активности опроса по идентификатору</remarks>
+        /// <param name="id">Идентификатор опроса</param>
+        /// <param name="active">Флаг активности</param>
+        /// <response code="200">Успешно обновлена активность опроса по идентификатору</response>
+        /// <response code="204">Опрос с указанным идентификатором отсутствует</response>
+        [ProducesResponseType(typeof(SurveyOutputDto), StatusCodes.Status200OK)]
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpPut("active/{id}")]
+        public async Task<IActionResult> PutActiveAsync(int id, [FromQuery] bool active)
+        {
+            try
+            {
+                var surveyOld = await _repository.GetAsync(id); 
+                if (surveyOld == null)
+                {
+                    return NotFound();
+                }
+                surveyOld.Active = active;
+                var survey = await _repository.UpdateActiveAsync(id, surveyOld);
+                if (survey == null)
+                {
+                    return BadRequest("Error: can't update Active!");
+                }
+                SurveyOutputDto surveyOutput = _mapper.Map<Survey, SurveyOutputDto>(survey);
+                return Ok(surveyOutput);
             }
             catch (Exception ex)
             {
