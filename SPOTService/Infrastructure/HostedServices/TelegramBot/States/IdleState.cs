@@ -23,7 +23,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States
             if (message.Text == "/start")
             {
                 await _botClient.SendTextMessageAsync(message.From!.Id, "Привет!");
-                await _stateMachine.ChangeStateAsync(new WaitingForRegisterResponentState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new WaitingForRegisterResponentState(_stateMachine.ServiceScope));
             }
         }
 

@@ -13,7 +13,7 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
-    public class BotService(ILogger<BotService> _logger, MainContext _mainContext) : BackgroundService
+    public class BotService(ILogger<BotService> _logger, IServiceProvider _serviceScope) : BackgroundService
     {
         private readonly TelegramBotClient _botClient = new("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU");
         private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = new Dictionary<long, IAsyncStateMachine>();
@@ -40,12 +40,14 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
         }
         private async Task RestoreBotStateAsync()
         {
-            var respondents = _mainContext.Respondents.ToList();
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+            var respondents = mainContext.Respondents.ToList();
             foreach (var respondent in respondents)
             {
                 if (!_userStateMachine.ContainsKey(respondent.TelegramId))
                 {
-                    _userStateMachine[respondent.TelegramId] = new AsyncStateMachine(respondent.TelegramId, respondent.TelegramChatId, _botClient, _mainContext);
+                    _userStateMachine[respondent.TelegramId] = new AsyncStateMachine(respondent.TelegramId, respondent.TelegramChatId, _botClient, _serviceScope);
                     await _userStateMachine[respondent.TelegramId].RestoreStateAsync((int)respondent.StateId!);
                 }
             }
@@ -97,7 +99,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
                 
                 if (!_userStateMachine.ContainsKey(userId)) 
                 {
-                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, _mainContext);
+                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, _serviceScope);
                     await _userStateMachine[userId].ChangeStateAsync(new IdleState());
                 }
                 await _userStateMachine[userId].ProcessAsync(message);

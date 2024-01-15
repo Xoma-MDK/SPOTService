@@ -9,7 +9,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class RegisterResponentState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class RegisterResponentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -17,7 +17,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
         }
 
         public async Task ExecuteAsync(Message message)
@@ -47,13 +47,13 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             {
                 case "reg":
                     {
-                        await _stateMachine.ChangeStateAsync(new WaitingEnterSurnameState(_stateMachine.MainContext));
+                        await _stateMachine.ChangeStateAsync(new WaitingEnterSurnameState(_stateMachine.ServiceScope));
                         await _botClient.AnswerCallbackQueryAsync(query.Id);
                         break;
                     }
                 case "anon":
                     {
-                        await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.MainContext));
+                        await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.ServiceScope));
                         await _botClient.AnswerCallbackQueryAsync(query.Id);
                         break;
                     }

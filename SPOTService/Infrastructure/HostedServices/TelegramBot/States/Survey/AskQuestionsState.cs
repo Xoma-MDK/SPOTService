@@ -1,4 +1,5 @@
-﻿using SPOTService.DataStorage;
+﻿using Microsoft.EntityFrameworkCore;
+using SPOTService.DataStorage;
 using SPOTService.DataStorage.Entities;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
@@ -15,9 +16,9 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         private SurveyEntity _surveyEntity;
         private Dictionary<Question, bool> _questions;
         private Question? _questionCurrent;
-        public AskQuestionsState(MainContext mainContext, SurveyEntity survey)
+        public AskQuestionsState(IServiceProvider serviceScope, SurveyEntity survey)
         {
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
             _surveyEntity = survey;
             _questions = _surveyEntity.Questions!
                 .ToDictionary(question => question, _ => false);
@@ -26,13 +27,13 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         {
             return _questions.FirstOrDefault(q => q.Value == false).Key;
         }
-        public AskQuestionsState(MainContext mainContext, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
+        public AskQuestionsState(IServiceProvider serviceScope, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
-            _mainContext = mainContext;
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
+            _serviceScope = serviceScope;
         }
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -53,6 +54,9 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             }
             else
             {
+                using var scope = _serviceScope.CreateScope();
+                using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+                question = mainContext.Questions.Include(q => q.AnswerVariants).Where(q => q.Id == question.Id).First();
                 var options = question.AnswerVariants!.ToList();
                 var buttons = options.Select(o => InlineKeyboardButton.WithCallbackData(o.Title, $"AnswerVariant:{o.Id}"));
                 var keyboard = new InlineKeyboardMarkup(buttons);
@@ -67,7 +71,9 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             }
             else
             {
-                var respondent = _mainContext.Respondents.First(r => r.TelegramId == _userId);
+                using var scope = _serviceScope.CreateScope();
+                using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+                var respondent = mainContext.Respondents.First(r => r.TelegramId == _userId);
                 var answer = new Answer()
                 {
                     SurveyId = _surveyEntity.Id,
@@ -78,8 +84,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 };
                 try
                 {
-                    await _mainContext.AddAsync(answer);
-                    await _mainContext.SaveChangesAsync();
+                    await mainContext.AddAsync(answer);
+                    await mainContext.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -94,7 +100,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 else
                 {
                     await _botClient.SendTextMessageAsync(_chatId, "Спасибо за прохождение опроса!");
-                    await _stateMachine.ChangeStateAsync(new MainMenuState(_mainContext));
+                    await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.ServiceScope));
                 }
             }
         }
@@ -105,9 +111,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             {
                 if (query.Data!.StartsWith("AnswerVariant"))
                 {
+                    using var scope = _serviceScope.CreateScope();
+                    using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
                     await _botClient.AnswerCallbackQueryAsync(query.Id);
                     var answerVariantId = int.Parse(query.Data!.Split(':')[1]);
-                    var respondent = _mainContext.Respondents.First(r => r.TelegramId == _userId);
+                    var respondent = mainContext!.Respondents.First(r => r.TelegramId == _userId);
                     var answer = new Answer()
                     {
                         SurveyId = _surveyEntity.Id,
@@ -116,8 +124,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                         RespondentId = respondent.Id,
                         OpenAnswer = null
                     };
-                    await _mainContext.AddAsync(answer);
-                    await _mainContext.SaveChangesAsync();
+                    await mainContext!.AddAsync(answer);
+                    await mainContext!.SaveChangesAsync();
                     _questions[_questionCurrent] = true;
                     _questionCurrent = GetQuestion();
                     if (_questionCurrent != null)
@@ -128,13 +136,13 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                     {
 
                         await _botClient.SendTextMessageAsync(_chatId, "Спасибо за прохождение опроса!");
-                        await _stateMachine.ChangeStateAsync(new MainMenuState(_mainContext));
+                        await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.ServiceScope));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message, ex.InnerException!.Message);
+                Debug.WriteLine(ex);
             }
         }
 

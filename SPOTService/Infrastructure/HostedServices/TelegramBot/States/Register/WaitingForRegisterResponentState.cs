@@ -8,7 +8,7 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class WaitingForRegisterResponentState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class WaitingForRegisterResponentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -16,10 +16,12 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
-            if (_mainContext.Respondents.Any(x => x.TelegramId == _userId))
+            _serviceScope = serviceScope;
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+            if (mainContext.Respondents.Any(x => x.TelegramId == _userId))
             {
-                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.ServiceScope));
             }
             else
             {
@@ -37,7 +39,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                     "Хотите ли вы зарегистрироваться?\n" +
                     "Или желаете пройти опрос анонимно?",
                     replyMarkup: inlineKeyboard);
-                await _stateMachine.ChangeStateAsync(new RegisterResponentState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new RegisterResponentState(_stateMachine.ServiceScope));
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using SPOTService.DataStorage;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SPOTService.DataStorage;
 using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces
@@ -8,7 +9,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces
         IAsyncState CurrentState { get; }
         long UserId { get; }
         long ChatId { get; }
-        MainContext MainContext { get; }
+        IServiceProvider ServiceScope { get; }
 
         Task ChangeStateAsync(IAsyncState newState);
         Task RestoreStateAsync(int id);

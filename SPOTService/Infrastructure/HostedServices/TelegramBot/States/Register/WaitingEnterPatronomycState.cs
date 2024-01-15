@@ -8,7 +8,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class WaitingEnterPatronomycState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class WaitingEnterPatronomycState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -16,7 +16,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
             var inlineKeyboard = new InlineKeyboardMarkup
             (
                 new List<InlineKeyboardButton[]>()
@@ -37,14 +37,17 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
         {
             if (message.Text != "")
             {
-                var respondent = _mainContext.Respondents.First(r => r.TelegramId == _userId);
+                using var scope = _serviceScope.CreateScope();
+                using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+
+                var respondent = mainContext.Respondents.First(r => r.TelegramId == _userId);
                 if (respondent != null)
                 {
                     respondent.Patronomic = message.Text;
-                    _mainContext.Update(respondent);
-                    await _mainContext.SaveChangesAsync();
+                    mainContext.Update(respondent);
+                    await mainContext.SaveChangesAsync();
                 }
-                await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.ServiceScope));
             }
             else
             {
@@ -56,7 +59,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
         {
             if (query.Data == "NonePatronomyc")
             {
-                await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new EndingForRegisterState(_stateMachine.ServiceScope));
             }
         }
 

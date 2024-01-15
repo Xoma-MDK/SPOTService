@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class WaitingEnterNameState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class WaitingEnterNameState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -14,7 +14,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
             await _botClient.SendTextMessageAsync(_chatId, "Отлично, теперь напиши свое имя!");
         }
 
@@ -22,14 +22,17 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
         {
             if (message.Text != "")
             {
-                var respondent = _mainContext.Respondents.First(r => r.TelegramId == _userId);
+                using var scope = _serviceScope.CreateScope();
+                using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+
+                var respondent = mainContext!.Respondents.First(r => r.TelegramId == _userId);
                 if (respondent != null)
                 {
                     respondent.Name = message.Text;
-                    _mainContext.Update(respondent);
-                    await _mainContext.SaveChangesAsync();
+                    mainContext.Update(respondent);
+                    await mainContext.SaveChangesAsync();
                 }
-                await _stateMachine.ChangeStateAsync(new WaitingEnterPatronomycState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new WaitingEnterPatronomycState(_stateMachine.ServiceScope));
             }
             else
             {

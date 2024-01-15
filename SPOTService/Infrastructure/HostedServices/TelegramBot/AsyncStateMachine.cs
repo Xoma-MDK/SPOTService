@@ -1,22 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using SPOTService.DataStorage;
+﻿using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
 using System.Reflection;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
-    public class AsyncStateMachine(long userId, long chatId, TelegramBotClient botClient, MainContext mainContext) : IAsyncStateMachine
+    public class AsyncStateMachine(long userId, long chatId, TelegramBotClient botClient, IServiceProvider serviceScope) : IAsyncStateMachine
     {
         private IAsyncState _currentState;
         private long _userId = userId;
         private long _chatId = chatId;
         private TelegramBotClient _botClient = botClient;
-        private MainContext _mainContext = mainContext;
-
+        private IServiceProvider _serviceScope = serviceScope;
 
         public IAsyncState CurrentState
         {
@@ -31,9 +28,9 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             get { return _chatId; }
         }
 
-        public MainContext MainContext 
-        {
-            get { return _mainContext; }
+        public IServiceProvider ServiceScope 
+        { 
+            get { return _serviceScope; } 
         }
 
         public async Task ChangeStateAsync(IAsyncState newState)
@@ -42,13 +39,15 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             {
                 await _currentState.ExitAsync();
             }
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
 
             _currentState = newState;
-            var respondent = _mainContext.Respondents.Where(r => r.TelegramId == _userId).FirstOrDefault();
+            var respondent = mainContext.Respondents.Where(r => r.TelegramId == _userId).FirstOrDefault();
             if(respondent != null)
             {
                 respondent.StateId = (int)Enum.Parse(typeof(BotState), newState.GetType().Name);
-                await _mainContext.SaveChangesAsync();
+                await mainContext.SaveChangesAsync();
             }
             await _currentState.EnterAsync(_botClient, this);
         }
@@ -56,7 +55,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
         {
             var typeName = Enum.GetName(typeof(BotState), id);
             Type? type = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => t.Name == typeName);
-            IAsyncState? instance = (IAsyncState)Activator.CreateInstance(type!, _mainContext, _botClient, this)!;
+            IAsyncState? instance = (IAsyncState)Activator.CreateInstance(type!, _serviceScope, _botClient, this)!;
             _currentState = instance;
 
         }

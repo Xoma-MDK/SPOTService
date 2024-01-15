@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class CancelRegisterState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class CancelRegisterState() : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -14,7 +14,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = _stateMachine.ServiceScope;
         }
 
         public Task ExecuteAsync(Message message)

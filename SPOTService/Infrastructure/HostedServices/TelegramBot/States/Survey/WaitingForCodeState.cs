@@ -1,9 +1,8 @@
-﻿using SPOTService.DataStorage;
-using SPOTService.DataStorage.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -12,17 +11,17 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
 {
     public class WaitingForCodeState : AAsyncState, IAsyncState
     {
-        public WaitingForCodeState(MainContext mainContext)
+        public WaitingForCodeState(IServiceProvider serviceScope)
         {
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
         }
-        public WaitingForCodeState(MainContext mainContext, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
+        public WaitingForCodeState(IServiceProvider serviceScope, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
         }
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         { 
@@ -50,11 +49,12 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         {
             if(message.Text != null && message.Text == "Отмена!")
             {
-                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.ServiceScope));
                 return;
             }
-            _mainContext.ChangeTracker.Clear();
-            var survay = _mainContext.Surveys.Where(s => s.AccessCode == message.Text!.Trim()).FirstOrDefault();
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+            var survay = mainContext.Surveys.Include(q => q.Questions).Where(s => s.AccessCode == message.Text!.Trim()).FirstOrDefault();
             if (survay != null)
             {
                 if (survay.Active && survay.EndTime > DateTime.UtcNow)
@@ -68,7 +68,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                         $"Время и дата закрытия: {survay.EndTime}\n" +
                         $"Для группы: {survay.Group!.Title}\n" +
                         $"Организатор: {survay.User!.Surname} {survay.User!.Name[0]}. {survay.User!.Patronomyc![0]}.");
-                    await _stateMachine.ChangeStateAsync(new AskQuestionsState(_stateMachine.MainContext, survay));
+                    await _stateMachine.ChangeStateAsync(new AskQuestionsState(_stateMachine.ServiceScope, survay));
                 }
                 else
                 {

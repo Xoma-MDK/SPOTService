@@ -11,17 +11,17 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
 {
     public class MainMenuState : AAsyncState, IAsyncState
     {
-        public MainMenuState(MainContext mainContext)
+        public MainMenuState(IServiceProvider serviceScope)
         {
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
         }
-        public MainMenuState(MainContext mainContext, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
+        public MainMenuState(IServiceProvider serviceScope, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
         }
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -53,7 +53,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
         {
             if (message.Text == "Пройти опрос")
             {
-                await _stateMachine.ChangeStateAsync(new WaitingForCodeState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new WaitingForCodeState(_stateMachine.ServiceScope));
             }
         }
 

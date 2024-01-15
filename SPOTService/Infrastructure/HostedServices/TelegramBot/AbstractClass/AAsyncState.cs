@@ -1,4 +1,5 @@
-﻿using SPOTService.DataStorage;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 
@@ -8,7 +9,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass
     {
         protected TelegramBotClient _botClient;
         protected IAsyncStateMachine _stateMachine;
-        protected MainContext _mainContext;
+        protected IServiceProvider _serviceScope;
         protected long _userId;
         protected long _chatId;
     }

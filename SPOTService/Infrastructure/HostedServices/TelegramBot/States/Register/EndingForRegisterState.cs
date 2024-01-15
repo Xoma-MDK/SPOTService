@@ -1,18 +1,15 @@
 ﻿using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Telegram.Bot.Types.ReplyMarkups;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class EndingForRegisterState(MainContext mainContext) : AAsyncState, IAsyncState
+    public class EndingForRegisterState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
@@ -20,9 +17,12 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
-            _mainContext = mainContext;
+            _serviceScope = serviceScope;
 
-            var groups = _mainContext.Groups.ToList();
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+
+            var groups = mainContext.Groups.ToList();
             var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
             var keyboard = new InlineKeyboardMarkup(buttons);
             await _botClient.SendTextMessageAsync(_chatId, "Выбери свою группу:", replyMarkup: keyboard);
@@ -30,7 +30,9 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 
         public async Task ExecuteAsync(Message message)
         {
-            var groups = _mainContext.Groups.ToList();
+            using var scope = _serviceScope.CreateScope();
+            using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
+            var groups = mainContext.Groups.ToList();
             var buttons = groups.Select(g => InlineKeyboardButton.WithCallbackData(g.Title, $"Group:{g.Id}"));
             var keyboard = new InlineKeyboardMarkup(buttons);
             await _botClient.SendTextMessageAsync
@@ -46,13 +48,15 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
         {
             if (query.Data!.StartsWith("Group"))
             {
+                using var scope = _serviceScope.CreateScope();
+                using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
                 var groupId = int.Parse(query.Data.Split(':')[1]);
-                var respondent = _mainContext.Respondents.FirstOrDefault(r => r.TelegramId == _userId);
+                var respondent = mainContext.Respondents.FirstOrDefault(r => r.TelegramId == _userId);
                 if (respondent != null)
                 {
                     respondent.GroupId = groupId;
-                    _mainContext.Update(respondent);
-                    await _mainContext.SaveChangesAsync();
+                    mainContext.Update(respondent);
+                    await mainContext.SaveChangesAsync();
                 }
                 else
                 {
@@ -62,11 +66,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                         TelegramId = _userId,
                         TelegramChatId = _chatId
                     };
-                    var respondentEntity = await _mainContext.AddAsync(respondent);
-                    await _mainContext.SaveChangesAsync();
+                    var respondentEntity = await mainContext.AddAsync(respondent);
+                    await mainContext.SaveChangesAsync();
                 }
                 await _botClient.AnswerCallbackQueryAsync(query.Id);
-                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.MainContext));
+                await _stateMachine.ChangeStateAsync(new MainMenuState(_stateMachine.ServiceScope));
             }
         }
 
