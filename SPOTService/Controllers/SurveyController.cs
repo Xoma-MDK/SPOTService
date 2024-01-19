@@ -176,6 +176,7 @@ namespace SPOTService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         // DELETE <SurveyController>/{id}
         /// <summary>
         /// Удалить опрос по идентификатору

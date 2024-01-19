@@ -58,7 +58,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
                 question = mainContext.Questions.Include(q => q.AnswerVariants).Where(q => q.Id == question.Id).First();
                 var options = question.AnswerVariants!.ToList();
-                var buttons = options.Select(o => InlineKeyboardButton.WithCallbackData(o.Title, $"AnswerVariant:{o.Id}"));
+                var buttons = options.Select(o => InlineKeyboardButton.WithCallbackData(o.Title, $"Question:{question.Id};AnswerVariant:{o.Id}"));
                 var keyboard = new InlineKeyboardMarkup(buttons);
                 await _botClient.SendTextMessageAsync(_chatId, question.Title, replyMarkup: keyboard);
             }
@@ -109,17 +109,22 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         {
             try
             {
-                if (query.Data!.StartsWith("AnswerVariant"))
+                if (query.Data!.StartsWith("Question"))
                 {
                     using var scope = _serviceScope.CreateScope();
                     using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
                     await _botClient.AnswerCallbackQueryAsync(query.Id);
-                    var answerVariantId = int.Parse(query.Data!.Split(':')[1]);
+                    var answerVariantId = int.Parse(query.Data!.Split(';')[1].Split(':')[1]);
+                    var questionId = int.Parse(query.Data!.Split(';')[0].Split(':')[1]);
                     var respondent = mainContext!.Respondents.First(r => r.TelegramId == _userId);
+                    if(_questionCurrent.Id != questionId)
+                    {
+                        return;
+                    }
                     var answer = new Answer()
                     {
                         SurveyId = _surveyEntity.Id,
-                        QuestionId = _questionCurrent!.Id,
+                        QuestionId = questionId,
                         AnswerVariantId = answerVariantId,
                         RespondentId = respondent.Id,
                         OpenAnswer = null

@@ -1,4 +1,7 @@
-﻿namespace SPOTService.Dto.Answers
+﻿using SPOTService.DataStorage.Entities;
+using SPOTService.Dto.Respondent;
+
+namespace SPOTService.Dto.Answers
 {
     /// <summary>
     /// Модель выходных данных ответа
@@ -29,5 +32,9 @@
         /// Ответ на открытый вопрос
         /// </summary>
         public string? OpenAnswer { get; set; }
+        /// <summary>
+        /// Опрашмваемый
+        /// </summary>
+        public virtual RespondentOutputDto? Respondent { get; set; }
     }
 }
