@@ -5,15 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using SPOTService.DataStorage;
 using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
-using SPOTService.Dto.Surveys;
 using SPOTService.Dto.User;
 using SPOTService.Infrastructure.InternalServices.Auth;
 using SPOTService.Infrastructure.InternalServices.Auth.Constants;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
-using System.Net;
 
 namespace SPOTService.Controllers
-{
+{ 
     /// <summary>
     /// Контроллер запросов к сущности "пользователи"
     /// </summary>
