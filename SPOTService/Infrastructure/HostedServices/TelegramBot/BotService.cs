@@ -15,7 +15,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
     public class BotService(ILogger<BotService> _logger, IServiceProvider _serviceScope) : BackgroundService
     {
-        private readonly TelegramBotClient _botClient = new("6667947721:AAHvng4xyLEPrw42LIXDiuh0HHcoGHR3NIU");
+        private readonly TelegramBotClient _botClient = new("TOKEN");
         private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = new Dictionary<long, IAsyncStateMachine>();
         private readonly ReceiverOptions _receiverOptions = new()
         {
