@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace SPOTService.DataStorage.Entities
+﻿namespace SPOTService.DataStorage.Entities
 {
     public class Role : IEntity
     {
@@ -8,11 +6,8 @@ namespace SPOTService.DataStorage.Entities
 
         public required string Title { get; set; }
 
-        [JsonIgnore]
         public virtual IEnumerable<Rules>? Rules { get; set; }
-        [JsonIgnore]
         public virtual IEnumerable<RoleRules>? RoleRules { get; set; }
-        [JsonIgnore]
         public virtual IEnumerable<User>? Users { get; set; }
     }
 }

@@ -83,7 +83,7 @@ namespace SPOTService.Controllers
                     _logger.LogError("Fail map SurveyInputDto to Survey");
                     return BadRequest("Fail map SurveyInputDto to Survey");
                 }
-                if (survey.UserId == 0) return BadRequest("User id can't be 0");
+                if (survey.CreatorId == 0) return BadRequest("User id can't be 0");
                 if (survey.GroupId == 0) return BadRequest("Group id can't be 0");
                 var surveyEntity = await _repository.AddAsync(survey!);
                 if (surveyEntity == null)

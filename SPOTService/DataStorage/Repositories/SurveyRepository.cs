@@ -63,41 +63,8 @@ namespace SPOTService.DataStorage.Repositories
                 old.Active = entity.Active;
                 old.GroupId = entity.GroupId;
                 old.Department = entity.Department;
-                old.UserId = entity.UserId;
+                old.CreatorId = entity.CreatorId;
 
-                foreach (var question in old.Questions!)
-                {
-                    if (entity.Questions!.Select(q => q.Id).ToArray().Contains(question.Id))
-                    {
-                        old.Questions.First(q => q.Id == question.Id).Title = entity.Questions!.First(q => q.Id == question.Id).Title;
-                        old.Questions.First(q => q.Id == question.Id).IsOpen = entity.Questions!.First(q => q.Id == question.Id).IsOpen;
-                        foreach(AnswerVariant answerVariant in old.Questions!.First(q => q.Id == question.Id).AnswerVariants!)
-                        {
-                            if (entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.Select(q => q.Id).ToArray().Contains(answerVariant.Id))
-                            {
-                                old.Questions!.First(q => q.Id == question.Id).AnswerVariants!.First(a => a.Id == answerVariant.Id).Title = entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.First(a => a.Id == answerVariant.Id).Title;
-                            }
-                            else
-                            {
-                                old.Questions!.First(q => q.Id == question.Id).AnswerVariants!.ToList().Remove(answerVariant);
-                                _context.AnswerVariants.Remove(answerVariant);
-                                await _context.SaveChangesAsync();
-                            }
-                        }
-                        foreach (var answerVariant in entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.Where(q => q.Id == 0).Select(q => new AnswerVariant() { Title = q.Title}))
-                        {
-                            var answerVariantNew = _context.AnswerVariants.Add(answerVariant);
-                            await _context.SaveChangesAsync();
-
-                            _context.QuestionAnswerVariants.Add(new QuestionAnswerVariant() { QuestionId = question.Id, AnswerVariantId = answerVariantNew.Entity.Id });
-                            await _context.SaveChangesAsync();
-                        }
-                    }
-                    else
-                    {
-                        old.Questions.ToList().Remove(question);
-                        _context.Questions.Remove(question);
-                    }
                 }
 
                 try
@@ -106,14 +73,6 @@ namespace SPOTService.DataStorage.Repositories
                     _context.Surveys.Update(old);
                     await _context.SaveChangesAsync();
 
-                    foreach (var question in entity.Questions!.Where(q => q.Id == 0).Select(q => new Question() { Title = q.Title, IsOpen = q.IsOpen, AnswerVariants = q.AnswerVariants }))
-                    {
-                        var q = _context.Questions.Add(question);
-                        await _context.SaveChangesAsync();
-                        
-                        _context.SurveyQuestions.Add(new SurveyQuestion() { QuestionId = q.Entity.Id, SurveyId = id });
-                        await _context.SaveChangesAsync();
-                    }
                     var newEntity = await _context.Surveys.FindAsync(id);
                     return newEntity;
                 }
@@ -125,4 +84,4 @@ namespace SPOTService.DataStorage.Repositories
             }
         }
     }
-}
+
