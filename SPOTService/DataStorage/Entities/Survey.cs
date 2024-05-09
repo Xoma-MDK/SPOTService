@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace SPOTService.DataStorage.Entities
+﻿namespace SPOTService.DataStorage.Entities
 {
     public class Survey : IEntity
     {
@@ -13,18 +11,13 @@ namespace SPOTService.DataStorage.Entities
         public bool Active { get; set; }
         public int GroupId { get; set; }
         public string? Department {  get; set; }
-        public int UserId { get; set; }
+        public int CreatorId { get; set; }
+        public int MainQuestionGroupId { get; set; }
 
-        [JsonIgnore]
         public virtual Group? Group { get; set; }
 
-        [JsonIgnore]
         public virtual User? User { get; set; }
-        [JsonIgnore]
-        public virtual IEnumerable<Answer>? Answers { get; set; }
-        [JsonIgnore]
-        public virtual IEnumerable<Question>? Questions { get; set; }
-        [JsonIgnore]
-        public virtual IEnumerable<SurveyQuestion>? SurveyQuestions { get; set; }
+
+        public virtual QuestionGroup MainQuestionGroup { get; set; }
     }
 }

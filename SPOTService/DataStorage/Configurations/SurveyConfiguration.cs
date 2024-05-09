@@ -16,14 +16,8 @@ namespace SPOTService.DataStorage.Configurations
             entity.Property(x => x.AccessCode).IsRequired(true);
             entity.Property(x => x.Department).IsRequired(true);
             entity.Property(x => x.GroupId).IsRequired(true);
-            entity.Property(x => x.UserId).IsRequired(true);
+            entity.Property(x => x.CreatorId).IsRequired(true);
 
-            entity.HasMany(x => x.Questions)
-                  .WithMany(x => x.Surveys)
-                  .UsingEntity<SurveyQuestion>(
-                x => x.HasOne(x => x.Question).WithMany(x => x.SurveyQuestions),
-                x => x.HasOne(x => x.Survey).WithMany(x => x.SurveyQuestions)
-                );
             
             entity.HasOne(x => x.Group)
                   .WithMany(x => x.Surveys)
@@ -32,7 +26,12 @@ namespace SPOTService.DataStorage.Configurations
             
             entity.HasOne(x => x.User)
                   .WithMany(x => x.Surveys)
-                  .HasForeignKey(x => x.UserId)
+                  .HasForeignKey(x => x.CreatorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(x => x.MainQuestionGroup)
+                  .WithMany(x => x.Surveys)
+                  .HasForeignKey(x => x.MainQuestionGroupId)
                   .OnDelete(DeleteBehavior.Cascade);
 
         }

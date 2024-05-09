@@ -13,6 +13,11 @@ namespace SPOTService.DataStorage.Configurations
 
             entity.Property(e => e.Id).IsRequired(true);
             entity.Property(e => e.Title).IsRequired(true);
+
+            entity.HasOne(x => x.Question)
+                  .WithMany(x => x.AnswerVariants)
+                  .HasForeignKey(x => x.QuestionId)
+                  .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

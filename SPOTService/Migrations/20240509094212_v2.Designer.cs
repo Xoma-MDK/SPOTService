@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SPOTService.DataStorage;
@@ -11,9 +12,11 @@ using SPOTService.DataStorage;
 namespace SPOTService.Migrations
 {
     [DbContext(typeof(MainContext))]
-    partial class MainContextModelSnapshot : ModelSnapshot
+    [Migration("20240509094212_v2")]
+    partial class v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,6 +27,21 @@ namespace SPOTService.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("QuestionSurvey", b =>
+                {
+                    b.Property<int>("QuestionsId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SurveysId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("QuestionsId", "SurveysId");
+
+                    b.HasIndex("SurveysId");
+
+                    b.ToTable("QuestionSurvey");
+                });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Answer", b =>
                 {
@@ -45,6 +63,9 @@ namespace SPOTService.Migrations
                     b.Property<int>("RespondentId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("SurveyId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AnswerVariantId");
@@ -52,6 +73,8 @@ namespace SPOTService.Migrations
                     b.HasIndex("QuestionId");
 
                     b.HasIndex("RespondentId");
+
+                    b.HasIndex("SurveyId");
 
                     b.ToTable("Answer", (string)null);
                 });
@@ -353,6 +376,21 @@ namespace SPOTService.Migrations
                     b.ToTable("User", (string)null);
                 });
 
+            modelBuilder.Entity("QuestionSurvey", b =>
+                {
+                    b.HasOne("SPOTService.DataStorage.Entities.Question", null)
+                        .WithMany()
+                        .HasForeignKey("QuestionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SPOTService.DataStorage.Entities.Survey", null)
+                        .WithMany()
+                        .HasForeignKey("SurveysId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Answer", b =>
                 {
                     b.HasOne("SPOTService.DataStorage.Entities.AnswerVariant", "AnswerVariant")
@@ -371,6 +409,10 @@ namespace SPOTService.Migrations
                         .HasForeignKey("RespondentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("SPOTService.DataStorage.Entities.Survey", null)
+                        .WithMany("Answers")
+                        .HasForeignKey("SurveyId");
 
                     b.Navigation("AnswerVariant");
 
@@ -521,6 +563,11 @@ namespace SPOTService.Migrations
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Rules", b =>
                 {
                     b.Navigation("RoleRules");
+                });
+
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.Survey", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.User", b =>
