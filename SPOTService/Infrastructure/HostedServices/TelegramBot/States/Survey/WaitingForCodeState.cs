@@ -1,4 +1,5 @@
-﻿using SPOTService.DataStorage;
+﻿using Microsoft.EntityFrameworkCore;
+using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
@@ -53,7 +54,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             }
             using var scope = _serviceScope.CreateScope();
             using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
-            var survay = mainContext.Surveys.Where(s => s.AccessCode == message.Text!.Trim()).FirstOrDefault();
+            var survay = mainContext.Surveys.Include(q => q.Questions).Where(s => s.AccessCode == message.Text!.Trim()).FirstOrDefault();
             if (survay != null)
             {
                 if (survay.Active && survay.EndTime > DateTime.UtcNow)

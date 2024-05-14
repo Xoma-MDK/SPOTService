@@ -1,4 +1,6 @@
-﻿namespace SPOTService.DataStorage.Entities
+﻿using Newtonsoft.Json;
+
+namespace SPOTService.DataStorage.Entities
 {
     public class Respondent : IEntity
     {
@@ -11,7 +13,9 @@
         public long TelegramChatId { get; set; }
         public int? StateId { get; set; }
 
+        [JsonIgnore]
         public virtual Group? Group { get; set; }
+        [JsonIgnore]
         public virtual IEnumerable<Answer>? Answers { get; set; }
     }
 }

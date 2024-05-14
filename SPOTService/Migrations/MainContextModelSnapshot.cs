@@ -45,6 +45,9 @@ namespace SPOTService.Migrations
                     b.Property<int>("RespondentId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("SurveyId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AnswerVariantId");
@@ -52,6 +55,8 @@ namespace SPOTService.Migrations
                     b.HasIndex("QuestionId");
 
                     b.HasIndex("RespondentId");
+
+                    b.HasIndex("SurveyId");
 
                     b.ToTable("Answer", (string)null);
                 });
@@ -64,16 +69,11 @@ namespace SPOTService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("QuestionId");
 
                     b.ToTable("AnswerVariant", (string)null);
                 });
@@ -106,24 +106,16 @@ namespace SPOTService.Migrations
                     b.Property<bool>("IsOpen")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("QuestionGroupId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SequenceNumber")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuestionGroupId");
-
                     b.ToTable("Question", (string)null);
                 });
 
-            modelBuilder.Entity("SPOTService.DataStorage.Entities.QuestionGroup", b =>
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.QuestionAnswerVariant", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -131,26 +123,19 @@ namespace SPOTService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ParentId")
+                    b.Property<int>("AnswerVariantId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("SequenceNumber")
+                    b.Property<int>("QuestionId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId")
-                        .IsUnique();
+                    b.HasIndex("AnswerVariantId");
 
-                    b.ToTable("QuestionGroups");
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("QuestionAnswerVariants");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Respondent", b =>
@@ -244,14 +229,6 @@ namespace SPOTService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Alias")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -276,9 +253,6 @@ namespace SPOTService.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("CreatorId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Department")
                         .IsRequired()
                         .HasColumnType("text");
@@ -292,9 +266,6 @@ namespace SPOTService.Migrations
                     b.Property<int>("GroupId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MainQuestionGroupId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset?>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -302,15 +273,39 @@ namespace SPOTService.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("CreatorId");
+                    b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("MainQuestionGroupId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Survey", (string)null);
+                });
+
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.SurveyQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SurveyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("SurveyId");
+
+                    b.ToTable("SurveyQuestions");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.User", b =>
@@ -372,43 +367,38 @@ namespace SPOTService.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SPOTService.DataStorage.Entities.Survey", "Survey")
+                        .WithMany("Answers")
+                        .HasForeignKey("SurveyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("AnswerVariant");
 
                     b.Navigation("Question");
 
                     b.Navigation("Respondent");
+
+                    b.Navigation("Survey");
                 });
 
-            modelBuilder.Entity("SPOTService.DataStorage.Entities.AnswerVariant", b =>
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.QuestionAnswerVariant", b =>
                 {
+                    b.HasOne("SPOTService.DataStorage.Entities.AnswerVariant", "AnswerVariant")
+                        .WithMany("QuestionAnswerVariants")
+                        .HasForeignKey("AnswerVariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SPOTService.DataStorage.Entities.Question", "Question")
-                        .WithMany("AnswerVariants")
+                        .WithMany("QuestionAnswerVariants")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AnswerVariant");
+
                     b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("SPOTService.DataStorage.Entities.Question", b =>
-                {
-                    b.HasOne("SPOTService.DataStorage.Entities.QuestionGroup", "QuestionGroup")
-                        .WithMany("Questions")
-                        .HasForeignKey("QuestionGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("QuestionGroup");
-                });
-
-            modelBuilder.Entity("SPOTService.DataStorage.Entities.QuestionGroup", b =>
-                {
-                    b.HasOne("SPOTService.DataStorage.Entities.QuestionGroup", "ParentQuestionGroup")
-                        .WithOne("ChildrenQuestionGroup")
-                        .HasForeignKey("SPOTService.DataStorage.Entities.QuestionGroup", "ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentQuestionGroup");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Respondent", b =>
@@ -442,29 +432,40 @@ namespace SPOTService.Migrations
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Survey", b =>
                 {
-                    b.HasOne("SPOTService.DataStorage.Entities.User", "User")
-                        .WithMany("Surveys")
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SPOTService.DataStorage.Entities.Group", "Group")
                         .WithMany("Surveys")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SPOTService.DataStorage.Entities.QuestionGroup", "MainQuestionGroup")
+                    b.HasOne("SPOTService.DataStorage.Entities.User", "User")
                         .WithMany("Surveys")
-                        .HasForeignKey("MainQuestionGroupId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
 
-                    b.Navigation("MainQuestionGroup");
-
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.SurveyQuestion", b =>
+                {
+                    b.HasOne("SPOTService.DataStorage.Entities.Question", "Question")
+                        .WithMany("SurveyQuestions")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SPOTService.DataStorage.Entities.Survey", "Survey")
+                        .WithMany("SurveyQuestions")
+                        .HasForeignKey("SurveyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Survey");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.User", b =>
@@ -481,6 +482,8 @@ namespace SPOTService.Migrations
             modelBuilder.Entity("SPOTService.DataStorage.Entities.AnswerVariant", b =>
                 {
                     b.Navigation("Answers");
+
+                    b.Navigation("QuestionAnswerVariants");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Group", b =>
@@ -492,18 +495,11 @@ namespace SPOTService.Migrations
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Question", b =>
                 {
-                    b.Navigation("AnswerVariants");
-
                     b.Navigation("Answers");
-                });
 
-            modelBuilder.Entity("SPOTService.DataStorage.Entities.QuestionGroup", b =>
-                {
-                    b.Navigation("ChildrenQuestionGroup");
+                    b.Navigation("QuestionAnswerVariants");
 
-                    b.Navigation("Questions");
-
-                    b.Navigation("Surveys");
+                    b.Navigation("SurveyQuestions");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Respondent", b =>
@@ -521,6 +517,13 @@ namespace SPOTService.Migrations
             modelBuilder.Entity("SPOTService.DataStorage.Entities.Rules", b =>
                 {
                     b.Navigation("RoleRules");
+                });
+
+            modelBuilder.Entity("SPOTService.DataStorage.Entities.Survey", b =>
+                {
+                    b.Navigation("Answers");
+
+                    b.Navigation("SurveyQuestions");
                 });
 
             modelBuilder.Entity("SPOTService.DataStorage.Entities.User", b =>

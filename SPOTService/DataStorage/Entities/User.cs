@@ -1,4 +1,7 @@
-﻿namespace SPOTService.DataStorage.Entities
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
+
+namespace SPOTService.DataStorage.Entities
 {
     public class User : IEntity
     {
@@ -11,7 +14,9 @@
         public string? RefreshTokenHash { get; set; }
         public int RoleId { get; set; }
 
+        [JsonIgnore]
         public virtual IEnumerable<Survey>? Surveys { get; set; }
+        [JsonIgnore]
         public virtual Role? Role { get; set; }
     }
 }

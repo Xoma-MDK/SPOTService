@@ -15,13 +15,14 @@ namespace SPOTService.DataStorage
         public virtual DbSet<AnswerVariant> AnswerVariants { get; set; }
         public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<Question> Questions { get; set; }
+        public virtual DbSet<QuestionAnswerVariant> QuestionAnswerVariants { get; set; }
         public virtual DbSet<Respondent> Respondents { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<RoleRules> RoleRules { get; set; }
         public virtual DbSet<Rules> Rules { get; set; }
         public virtual DbSet<Survey> Surveys { get; set; }
+        public virtual DbSet<SurveyQuestion> SurveyQuestions { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<QuestionGroup> QuestionGroups { get; set; }
         public void Migrate()
         {
             if (!this.TestConnection())
