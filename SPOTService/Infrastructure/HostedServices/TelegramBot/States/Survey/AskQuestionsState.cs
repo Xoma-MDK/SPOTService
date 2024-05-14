@@ -20,6 +20,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         {
             _serviceScope = serviceScope;
             _surveyEntity = survey;
+            _questions = _surveyEntity.Questions!
+                .ToDictionary(question => question, _ => false);
         }
         private Question? GetQuestion()
         {
@@ -74,6 +76,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 var respondent = mainContext.Respondents.First(r => r.TelegramId == _userId);
                 var answer = new Answer()
                 {
+                    SurveyId = _surveyEntity.Id,
                     QuestionId = _questionCurrent!.Id,
                     AnswerVariantId = null,
                     RespondentId = respondent.Id,
@@ -120,6 +123,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                     }
                     var answer = new Answer()
                     {
+                        SurveyId = _surveyEntity.Id,
                         QuestionId = questionId,
                         AnswerVariantId = answerVariantId,
                         RespondentId = respondent.Id,

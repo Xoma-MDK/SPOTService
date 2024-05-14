@@ -8,7 +8,9 @@ namespace SPOTService.DataStorage.Entities
         public int RoleId { get; set; }
         public int RulesId { get; set; }
 
+        [JsonIgnore]
         public virtual Role? Role { get; set; }
+        [JsonIgnore]
         public virtual Rules? Rule { get; set; }
     }
 }
