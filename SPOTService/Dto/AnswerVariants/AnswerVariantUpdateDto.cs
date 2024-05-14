@@ -1,4 +1,6 @@
-﻿namespace SPOTService.Dto.AnswerVariants
+﻿using SPOTService.Dto.Questions;
+
+namespace SPOTService.Dto.AnswerVariants
 {
     /// <summary>
     /// Модель обновления даных варианта ответа
@@ -13,5 +15,7 @@
         /// Заголовок
         /// </summary>
         public required string Title { get; set; }
+        public int QuestionId { get; set; }
+        public virtual QuestionOutputDto Question { get; set; }
     }
 }

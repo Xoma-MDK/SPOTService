@@ -1,4 +1,5 @@
 ﻿using SPOTService.Dto.AnswerVariants;
+using SPOTService.Dto.QuestionGroup;
 
 namespace SPOTService.Dto.Questions
 {
@@ -23,5 +24,9 @@ namespace SPOTService.Dto.Questions
         /// Варианты ответов
         /// </summary>
         public IEnumerable<AnswerVariantUpdateDto>? AnswerVariants { get; set; }
+        public int QuestionGroupId { get; set; }
+        public int SequenceNumber { get; set; }
+
+        public virtual QuestionGroupOutputDto QuestionGroup { get; set; }
     }
 }

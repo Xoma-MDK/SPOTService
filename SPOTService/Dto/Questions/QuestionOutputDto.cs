@@ -1,4 +1,5 @@
 ﻿using SPOTService.Dto.AnswerVariants;
+using SPOTService.Dto.QuestionGroup;
 
 namespace SPOTService.Dto.Questions
 {
@@ -19,6 +20,10 @@ namespace SPOTService.Dto.Questions
         /// Флаг "открытости" вопроса
         /// </summary>
         public bool IsOpen { get; set; }
+        public int QuestionGroupId { get; set; }
+        public int SequenceNumber { get; set; }
+
+        public virtual QuestionGroupOutputDto QuestionGroup { get; set; }
         /// <summary>
         /// Варианты ответов
         /// </summary>

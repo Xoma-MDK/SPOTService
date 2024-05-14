@@ -1,5 +1,4 @@
-﻿using SPOTService.DataStorage.Entities;
-using SPOTService.Dto.Respondent;
+﻿using SPOTService.Dto.Respondent;
 
 namespace SPOTService.Dto.Answers
 {
@@ -16,10 +15,6 @@ namespace SPOTService.Dto.Answers
         /// Идентификатор вопроса
         /// </summary>
         public int QuestionId { get; set; }
-        /// <summary>
-        /// Идентификатор опроса
-        /// </summary>
-        public int SurveyId { get; set; }
         /// <summary>
         /// Идентификатор опрашиваемого
         /// </summary>

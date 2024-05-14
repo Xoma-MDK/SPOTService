@@ -49,7 +49,7 @@ namespace SPOTService.Dto.Surveys
         /// <summary>
         /// Идентификатор пользователя
         /// </summary>
-        public int UserId { get; set; }
+        public int CreatorId { get; set; }
         /// <summary>
         /// Вопросы
         /// </summary>

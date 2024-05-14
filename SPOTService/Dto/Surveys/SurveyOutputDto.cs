@@ -1,6 +1,5 @@
-﻿using SPOTService.Dto.Answers;
-using SPOTService.Dto.Groups;
-using SPOTService.Dto.Questions;
+﻿using SPOTService.Dto.Groups;
+using SPOTService.Dto.QuestionGroup;
 using SPOTService.Dto.User;
 
 namespace SPOTService.Dto.Surveys
@@ -49,7 +48,8 @@ namespace SPOTService.Dto.Surveys
         /// <summary>
         /// Идентификатор пользователя
         /// </summary>
-        public int UserId { get; set; }
+        public int CreatorId { get; set; }
+        public int MainQuestionGroupId { get; set; }
         /// <summary>
         /// Группа
         /// </summary>
@@ -57,14 +57,8 @@ namespace SPOTService.Dto.Surveys
         /// <summary>
         /// Пользователь
         /// </summary>
-        public UserOutputDto? User { get; set; }
-        /// <summary>
-        /// Ответы участников опроса
-        /// </summary>
-        public IEnumerable<AnswerOutputDto>? Answers { get; set; }
-        /// <summary>
-        /// Вопросы
-        /// </summary>
-        public IEnumerable<QuestionOutputDto>? Questions { get; set; }
+        public UserOutputDto? Creator { get; set; }
+
+        public virtual QuestionGroupOutputDto MainQuestionGroup { get; set; }
     }
 }

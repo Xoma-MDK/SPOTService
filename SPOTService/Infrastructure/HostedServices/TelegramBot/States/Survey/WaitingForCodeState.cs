@@ -66,7 +66,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                         $"Время и дата открытия: {survay.StartTime}\n" +
                         $"Время и дата закрытия: {survay.EndTime}\n" +
                         $"Для группы: {survay.Group!.Title}\n" +
-                        $"Организатор: {survay.User!.Surname} {survay.User!.Name[0]}. {survay.User!.Patronomyc![0]}.");
+                        $"Организатор: {survay.Creator!.Surname} {survay.Creator!.Name[0]}. {survay.Creator!.Patronomyc![0]}.");
                     await _stateMachine.ChangeStateAsync(new AskQuestionsState(_stateMachine.ServiceScope, survay));
                 }
                 else

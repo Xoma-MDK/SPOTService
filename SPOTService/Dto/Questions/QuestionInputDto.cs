@@ -1,11 +1,9 @@
-﻿using SPOTService.Dto.AnswerVariants;
-
-namespace SPOTService.Dto.Questions
+﻿namespace SPOTService.Dto.Questions
 {
     /// <summary>
     /// Модель входных данных вопроса
     /// </summary>
-    public class QuestionIntputDto
+    public class QuestionInputDto
     {
         /// <summary>
         /// Заголовок
@@ -18,7 +16,8 @@ namespace SPOTService.Dto.Questions
         /// <summary>
         /// Варианты ответов
         /// </summary>
-        public IEnumerable<AnswerVariantInputDto>? AnswerVariants { get; set; }
+        public int QuestionGroupId { get; set; }
+        public int SequenceNumber { get; set; }
         /// <summary>
         /// Перевести объект вопроса в строку
         /// </summary>
@@ -26,15 +25,7 @@ namespace SPOTService.Dto.Questions
         public override string ToString()
         {
             return $"\nTitle: {Title},\n" +
-                $" IsOpen: {IsOpen}, \n" +
-                $"AnswerVariants: {AnswerVariantsToString()}\n";
-        }
-        private string AnswerVariantsToString()
-        {
-            if (AnswerVariants == null)
-                return "N/A";
-
-            return "\n[" + string.Join(", \n", AnswerVariants.Select(a => a.ToString())) + "]\n";
+                $" IsOpen: {IsOpen}, \n";
         }
     }
 }

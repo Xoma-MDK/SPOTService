@@ -24,7 +24,7 @@ namespace SPOTService.DataStorage.Configurations
                   .HasForeignKey(x => x.GroupId)
                   .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasOne(x => x.User)
+            entity.HasOne(x => x.Creator)
                   .WithMany(x => x.Surveys)
                   .HasForeignKey(x => x.CreatorId)
                   .OnDelete(DeleteBehavior.Cascade);

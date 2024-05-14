@@ -1,9 +1,4 @@
-﻿using SPOTService.Dto.Answers;
-using SPOTService.Dto.Groups;
-using SPOTService.Dto.Questions;
-using SPOTService.Dto.User;
-using System.Globalization;
-using System.Text;
+﻿using System.Globalization;
 
 namespace SPOTService.Dto.Surveys
 {
@@ -47,15 +42,7 @@ namespace SPOTService.Dto.Surveys
         /// <summary>
         /// Идентификатор пользователя
         /// </summary>
-        public int UserId { get; set; }
-        /// <summary>
-        /// Вопросы
-        /// </summary>
-        public IEnumerable<QuestionIntputDto>? Questions { get; set; }
-        /// <summary>
-        /// Перевести объект опроса в строку
-        /// </summary>
-        /// <returns>Объект опроса в строке</returns>
+        public int CreatorId { get; set; }
         public override string ToString()
         {
             return $"\nTitle: {Title}, \n" +
@@ -66,15 +53,8 @@ namespace SPOTService.Dto.Surveys
                    $"Active: {Active}, \n" +
                    $"GroupId: {GroupId}, \n" +
                    $"Department: {Department ?? "N/A"}, \n" +
-                   $"UserId: {UserId}, \n" +
-                   $"Questions: {QuestionsToString()}\n";
+                   $"UserId: {CreatorId}, \n";
         }
-        private string QuestionsToString()
-        {
-            if (Questions == null)
-                return "N/A";
 
-            return "\n[" + string.Join(", \n", Questions) + "]\n";
-        }
     }
 }
