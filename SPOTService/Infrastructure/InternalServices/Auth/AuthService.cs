@@ -38,11 +38,7 @@ namespace SPOTService.Infrastructure.InternalServices.Auth
             catch (Exception ex)
             {
                 _logger.LogCritical("Crit: {}", ex.Message);
-                return new TokensResponse
-                {
-                    Access = "",
-                    Refresh = "",
-                };
+                throw new ArgumentException("Invalid password");
             }
             
         }

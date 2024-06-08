@@ -7,14 +7,8 @@ services:
       dockerfile: SPOTService/Dockerfile
     networks:
       - postgres
-  spot_front:
-    build:
-      context: .
-      dockerfile: react-spot-frontend/Dockerfile
     ports:
-      - 3000:3000
-    networks:
-      - postgres
+      - 15009:15009
   postgres:
     image: postgres:16.0
     environment:

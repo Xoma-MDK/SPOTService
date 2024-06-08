@@ -121,6 +121,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddScoped<SurveyRepository>();
     services.AddScoped<QuestionRepository>();
     services.AddScoped<AnswerVariantRepository>();
+    services.AddScoped<RoleRepository>();
 }
 
 void ConfigureApp(IApplicationBuilder app, IWebHostEnvironment env)

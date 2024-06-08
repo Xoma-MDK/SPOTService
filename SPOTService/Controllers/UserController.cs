@@ -5,12 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using SPOTService.DataStorage;
 using SPOTService.DataStorage.Entities;
 using SPOTService.DataStorage.Repositories;
-using SPOTService.Dto.Surveys;
+using SPOTService.Dto.Roles;
 using SPOTService.Dto.User;
 using SPOTService.Infrastructure.InternalServices.Auth;
 using SPOTService.Infrastructure.InternalServices.Auth.Constants;
 using SPOTService.Infrastructure.InternalServices.Auth.Models;
-using System.Net;
 
 namespace SPOTService.Controllers
 {
@@ -22,6 +21,7 @@ namespace SPOTService.Controllers
     /// <param name="mainContext">Контекст базы данных</param>
     /// <param name="mapper">Маппер</param>
     /// <param name="repository">Репозиторий "пользователи"</param>
+    /// <param name="roleRepository"></param>
     [ApiController]
     [Route("users")]
     public class UserController(
@@ -29,7 +29,8 @@ namespace SPOTService.Controllers
         IAuthService authService, 
         MainContext mainContext, 
         IMapper mapper,
-        UserRepository repository
+        UserRepository repository,
+        RoleRepository roleRepository
         ) : ControllerBase
     {
         private readonly ILogger<UserController> _logger = logger;
@@ -37,7 +38,37 @@ namespace SPOTService.Controllers
         private readonly MainContext _mainContext = mainContext;
         private readonly IMapper _mapper = mapper;
         private readonly UserRepository _repository = repository;
+        private readonly RoleRepository _roleRepository = roleRepository;
+        
+        // GET <UserController>/{id}
+        /// <summary>
+        /// Получить все роли
+        /// </summary>
+        /// <remarks>Запрос для получения всех ролей</remarks>
+        /// <response code="200">Успешно получены роли</response>
+        [ProducesResponseType(typeof(IEnumerable<RoleOutputDto>), 200)]
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var entity = await _roleRepository.GetAllAsync();
+            return Ok(_mapper.Map<IEnumerable<Role>, IEnumerable<RoleOutputDto>>(entity));
+        }
 
+        // GET <UserController>/{id}
+        /// <summary>
+        /// Получить всех пользователей
+        /// </summary>
+        /// <remarks>Запрос для получения всех пользователей</remarks>
+        /// <response code="200">Успешно получены пользователи</response>
+        [ProducesResponseType(typeof(IEnumerable<UserOutputDto>), 200)]
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpGet()]
+        public async Task<IActionResult> GetUsers()
+        {
+            var entity = await _repository.GetAllAsync();
+            return Ok(_mapper.Map<IEnumerable<User>, IEnumerable<UserOutputDto>>(entity));
+        }
         // GET <UserController>/{id}
         /// <summary>
         /// Получить пользователя по идентификатору
@@ -105,6 +136,34 @@ namespace SPOTService.Controllers
                 _logger.LogError("Error: {}", ex.Message);
                 return BadRequest(ex.Message);
             }
+        }        
+        // Put <SurveyController>/register
+        /// <summary>
+        /// Обновить пользователя
+        /// </summary>
+        /// <remarks>Запрос для обновления пользователя</remarks>
+        /// <response code="200">Успешно обновлен пользователь</response>
+        /// <response code="400">Ошибка при создании пользователя</response>
+        [ProducesResponseType(typeof(UserOutputDto), 200)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UserInputDto userInput, [FromHeader] int? userId)
+        {
+            try
+            {
+                var staff = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+                if (staff == null || staff.RoleId != 1)
+                    return Forbid();
+                var user = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+                user = _mapper.Map<UserInputDto, User>(userInput);
+                await _mainContext.SaveChangesAsync();
+                var userOutputDto = _mapper.Map<User, UserOutputDto>(user!);
+                return Ok(userOutputDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
         // POST <SurveyController>/login
         /// <summary>
@@ -145,6 +204,7 @@ namespace SPOTService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         // POST <SurveyController>/logout
         /// <summary>
         /// Выйти из системы

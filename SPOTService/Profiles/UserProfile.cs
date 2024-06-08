@@ -6,7 +6,9 @@ namespace SPOTService.Profiles
 {
     public class UserProfile : Profile
     {
-        public UserProfile() {
+        public UserProfile()
+        {
+            CreateMap<UserInputDto, User>();
             CreateMap<User, UserOutputDto>();
         }
     }
