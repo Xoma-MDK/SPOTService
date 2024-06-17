@@ -1,18 +1,32 @@
 ﻿using ControlManagerLib.DataStorage.Repositories;
 using Microsoft.EntityFrameworkCore;
 using SPOTService.DataStorage.Entities;
-using Telegram.Bot.Types;
 
 namespace SPOTService.DataStorage.Repositories
 {
-    public class SurveyRepository(MainContext _context, ILogger<SurveyRepository> _logger) : BaseRepository<Survey, MainContext>(_context)
+    /// <summary>
+    /// Репозиторий для работы с сущностью Survey.
+    /// </summary>
+    public class SurveyRepository : BaseRepository<Survey, MainContext>
     {
+        private readonly ILogger<SurveyRepository> _logger;
+
         /// <summary>
-        /// Метод обновления поля Active
+        /// Конструктор репозитория Survey.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="survey"></param>
-        /// <returns></returns>
+        /// <param name="context">Контекст базы данных MainContext.</param>
+        /// <param name="logger">Логгер для логирования действий репозитория.</param>
+        public SurveyRepository(MainContext context, ILogger<SurveyRepository> logger) : base(context)
+        {
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Метод обновления поля Active.
+        /// </summary>
+        /// <param name="id">Идентификатор сущности Survey.</param>
+        /// <param name="survey">Объект Survey с обновленными данными.</param>
+        /// <returns>Обновленная сущность Survey или null, если сущность не найдена.</returns>
         public virtual async Task<Survey?> UpdateActiveAsync(int id, Survey survey)
         {
             var old = await _context.Surveys.FindAsync(id);
@@ -34,17 +48,17 @@ namespace SPOTService.DataStorage.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Crit: {}", ex.Message);
+                _logger.LogError(ex, "Failed to update Active field for Survey with ID {Id}", id);
                 return null;
             }
         }
 
         /// <summary>
-        /// Обновить запись в таблице
+        /// Обновление сущности Survey.
         /// </summary>
-        /// <param name="entity">Запись с обновленными данными</param> 
-        /// <returns>
-        /// </returns>
+        /// <param name="id">Идентификатор сущности Survey.</param>
+        /// <param name="entity">Обновленная сущность Survey с новыми данными.</param>
+        /// <returns>Обновленная сущность Survey или null, если сущность не найдена.</returns>
         public virtual async Task<Survey?> UpdateAsync(int id, Survey entity)
         {
             var old = await _context.Surveys.FindAsync(id);
@@ -71,7 +85,7 @@ namespace SPOTService.DataStorage.Repositories
                     {
                         old.Questions.First(q => q.Id == question.Id).Title = entity.Questions!.First(q => q.Id == question.Id).Title;
                         old.Questions.First(q => q.Id == question.Id).IsOpen = entity.Questions!.First(q => q.Id == question.Id).IsOpen;
-                        foreach(AnswerVariant answerVariant in old.Questions!.First(q => q.Id == question.Id).AnswerVariants!)
+                        foreach (AnswerVariant answerVariant in old.Questions!.First(q => q.Id == question.Id).AnswerVariants!)
                         {
                             if (entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.Select(q => q.Id).ToArray().Contains(answerVariant.Id))
                             {
@@ -84,7 +98,7 @@ namespace SPOTService.DataStorage.Repositories
                                 await _context.SaveChangesAsync();
                             }
                         }
-                        foreach (var answerVariant in entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.Where(q => q.Id == 0).Select(q => new AnswerVariant() { Title = q.Title}))
+                        foreach (var answerVariant in entity.Questions!.First(q => q.Id == question.Id).AnswerVariants!.Where(q => q.Id == 0).Select(q => new AnswerVariant() { Title = q.Title }))
                         {
                             var answerVariantNew = _context.AnswerVariants.Add(answerVariant);
                             await _context.SaveChangesAsync();
@@ -110,7 +124,7 @@ namespace SPOTService.DataStorage.Repositories
                     {
                         var q = _context.Questions.Add(question);
                         await _context.SaveChangesAsync();
-                        
+
                         _context.SurveyQuestions.Add(new SurveyQuestion() { QuestionId = q.Entity.Id, SurveyId = id });
                         await _context.SaveChangesAsync();
                     }
@@ -119,7 +133,7 @@ namespace SPOTService.DataStorage.Repositories
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogCritical("Crit: {}", ex.Message);
+                    _logger.LogError(ex, "Failed to update Survey with ID {Id}", id);
                     return null;
                 }
             }

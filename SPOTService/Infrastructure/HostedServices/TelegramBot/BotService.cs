@@ -1,22 +1,21 @@
-﻿using System;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Exceptions;
-using SPOTService.DataStorage;
-using SPOTService.DataStorage.Entities;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
+﻿using SPOTService.DataStorage;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States;
+using Telegram.Bot;
+using Telegram.Bot.Exceptions;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot
 {
+    /// <summary>
+    /// Сервис фоновой задачи для управления Telegram-ботом.
+    /// </summary>
     public class BotService(ILogger<BotService> _logger, IServiceProvider _serviceScope) : BackgroundService
     {
         private readonly TelegramBotClient _botClient = new("6667947721:AAE3M-U2KmCTzPzkE__5L3BIcQl-ZWHpYKE");
-        private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = new Dictionary<long, IAsyncStateMachine>();
+        private readonly Dictionary<long, IAsyncStateMachine> _userStateMachine = [];
         private readonly ReceiverOptions _receiverOptions = new()
         {
             AllowedUpdates =
@@ -27,6 +26,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             ThrowPendingUpdates = true,
         };
 
+        /// <summary>
+        /// Основной метод, выполняющийся при запуске фоновой задачи.
+        /// </summary>
+        /// <param name="stoppingToken">Токен для отмены операции.</param>
+        /// <returns>Задача, представляющая выполнение фоновой задачи.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await RestoreBotStateAsync();
@@ -38,6 +42,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             var me = await _botClient.GetMeAsync(stoppingToken);
             _logger.LogInformation("{} запущен!", me.FirstName);
         }
+        /// <summary>
+        /// Восстанавливает состояние бота при запуске.
+        /// </summary>
+        /// <returns>Задача асинхронного выполнения восстановления состояния бота.</returns>
         private async Task RestoreBotStateAsync()
         {
             using var scope = _serviceScope.CreateScope();
@@ -52,6 +60,13 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
                 }
             }
         }
+        /// <summary>
+        /// Обработчик обновлений Telegram.
+        /// </summary>
+        /// <param name="botClient">Клиент Telegram бота.</param>
+        /// <param name="update">Обновление от Telegram.</param>
+        /// <param name="cancellationToken">Токен для отмены операции.</param>
+        /// <returns>Задача асинхронного выполнения обработки обновления.</returns>
         private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
@@ -76,6 +91,13 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
                 _logger.LogError("Error: {}", ex.Message);
             }
         }
+        /// <summary>
+        /// Обработчик ошибок, возникающих при работе с Telegram API.
+        /// </summary>
+        /// <param name="botClient">Клиент Telegram бота.</param>
+        /// <param name="error">Исключение, представляющее ошибку.</param>
+        /// <param name="cancellationToken">Токен для отмены операции.</param>
+        /// <returns>Задача асинхронного выполнения обработки ошибки.</returns>
         private Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
         {
             // Тут создадим переменную, в которую поместим код ошибки и её сообщение 
@@ -89,6 +111,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
+        /// <summary>
+        /// Обработчик сообщений от пользователя.
+        /// </summary>
+        /// <param name="message">Сообщение от пользователя.</param>
+        /// <returns>Задача асинхронного выполнения обработки сообщения.</returns>
         public async Task OnMessage(Message message)
         {
 
@@ -96,20 +123,25 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             {
                 var chatId = message.Chat.Id;
                 var userId = message.From!.Id;
-                
-                if (!_userStateMachine.ContainsKey(userId)) 
+
+                if (!_userStateMachine.TryGetValue(userId, out IAsyncStateMachine? value))
                 {
-                    _userStateMachine[userId] = new AsyncStateMachine(userId, chatId, _botClient, _serviceScope);
+                    value = new AsyncStateMachine(userId, chatId, _botClient, _serviceScope);
+                    _userStateMachine[userId] = value;
                     await _userStateMachine[userId].ChangeStateAsync(new IdleState());
                 }
-                await _userStateMachine[userId].ProcessAsync(message);
+                await value.ProcessAsync(message);
             }
         }
 
+        /// <summary>
+        /// Обработчик колбэк-запросов от пользователя.
+        /// </summary>
+        /// <param name="callbackQuery">Колбэк-запрос от пользователя.</param>
+        /// <returns>Задача асинхронного выполнения обработки колбэк-запроса.</returns>
         public async Task OnCallbackQuery(CallbackQuery callbackQuery)
         {
             var userId = callbackQuery.From.Id;
-            var chatId = callbackQuery.Message!.Chat.Id;
 
             await _userStateMachine[userId].ProcessAsync(callbackQuery);
         }

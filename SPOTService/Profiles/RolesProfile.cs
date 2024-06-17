@@ -4,8 +4,14 @@ using SPOTService.Dto.Roles;
 
 namespace SPOTService.Profiles
 {
-    public class RolesProfile: Profile
+    /// <summary>
+    /// Профиль для маппинга сущности Role на DTO RoleOutputDto.
+    /// </summary>
+    public class RolesProfile : Profile
     {
+        /// <summary>
+        /// Конструктор профиля маппинга.
+        /// </summary>
         public RolesProfile()
         {
             CreateMap<Role, RoleOutputDto>();

@@ -11,12 +11,12 @@ namespace ControlManagerLib.DataStorage.Repositories
     /// <remarks>
     /// Базовый конструктор класса
     /// </remarks>
-    /// <param name="context">Экземпляр класса, отнаследованного от DbContext</param>
+    /// <param name="context">Экземпляр класса, унаследованного от DbContext</param>
     public abstract class BaseRepository<TEntity, TContext>(TContext context) : IRepository<TEntity>, IDisposable
         where TEntity : class, IEntity
         where TContext : DbContext
     {
-        protected readonly TContext _context = context;
+        private protected readonly TContext _context = context;
 
         /// <summary>
         /// Получить одну запись из таблицы по id
@@ -75,7 +75,9 @@ namespace ControlManagerLib.DataStorage.Repositories
             return entity;
         }
 
-        public void Dispose(){
+        /// <inheritdoc/>
+        public void Dispose()
+        {
             _context.Dispose();
             GC.SuppressFinalize(this);
         }

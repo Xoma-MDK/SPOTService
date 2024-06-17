@@ -1,7 +1,4 @@
-﻿using SPOTService.DataStorage;
-using SPOTService.DataStorage.Entities;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.enums;
+﻿using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,17 +6,23 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class RegisterResponentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
+    /// <summary>
+    /// Состояние регистрации респондента в Telegram боте.
+    /// </summary>
+    public class RegisterRespondentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
-        public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
+        /// <inheritdoc/>
+        public Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
             _stateMachine = stateMachine;
             _userId = _stateMachine.UserId;
             _chatId = _stateMachine.ChatId;
             _serviceScope = serviceScope;
+            return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
             var inlineKeyboard = new InlineKeyboardMarkup
@@ -41,6 +44,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                 replyMarkup: inlineKeyboard);
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             switch (query.Data)
@@ -60,8 +64,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             }
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
+            return Task.CompletedTask;
         }
     }
 }

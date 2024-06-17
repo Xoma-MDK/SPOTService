@@ -4,9 +4,15 @@ using SPOTService.Dto.Surveys;
 
 namespace SPOTService.Profiles
 {
+    /// <summary>
+    /// Профиль для маппинга сущности Survey на DTO SurveyOutputDto и обратно.
+    /// </summary>
     public class SurveyProfile : Profile
     {
-        public SurveyProfile() 
+        /// <summary>
+        /// Конструктор профиля маппинга.
+        /// </summary>
+        public SurveyProfile()
         {
             CreateMap<Survey, SurveyOutputDto>();
             CreateMap<SurveyInputDto, Survey>();

@@ -4,9 +4,15 @@ using SPOTService.Dto.AnswerVariants;
 
 namespace SPOTService.Profiles
 {
+    /// <summary>
+    /// Профиль AutoMapper для маппинга модели AnswerVariant на DTO AnswerVariantOutputDto и обратно.
+    /// </summary>
     public class AnswerVariantProfile : Profile
     {
-        public AnswerVariantProfile() 
+        /// <summary>
+        /// Конструктор профиля маппинга AnswerVariantProfile.
+        /// </summary>
+        public AnswerVariantProfile()
         {
             CreateMap<AnswerVariant, AnswerVariantOutputDto>();
             CreateMap<AnswerVariantInputDto, AnswerVariant>();

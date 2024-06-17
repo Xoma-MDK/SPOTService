@@ -1,7 +1,5 @@
-﻿using SPOTService.DataStorage;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
+﻿using SPOTService.Infrastructure.HostedServices.TelegramBot.AbstractClass;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.Interfaces;
-using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register;
 using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,12 +7,26 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
 {
+    /// <summary>
+    /// Состояние главного меню бота.
+    /// </summary>
     public class MainMenuState : AAsyncState, IAsyncState
     {
+        /// <summary>
+        /// Инициализирует новый экземпляр класса MainMenuState.
+        /// </summary>
+        /// <param name="serviceScope">Провайдер служб для доступа к зависимостям.</param>
         public MainMenuState(IServiceProvider serviceScope)
         {
             _serviceScope = serviceScope;
         }
+
+        /// <summary>
+        /// Инициализирует новый экземпляр класса MainMenuState с передачей клиента Telegram и текущего состояния.
+        /// </summary>
+        /// <param name="serviceScope">Провайдер служб для доступа к зависимостям.</param>
+        /// <param name="botClient">Клиент Telegram Bot API.</param>
+        /// <param name="stateMachine">Асинхронный конечный автомат.</param>
         public MainMenuState(IServiceProvider serviceScope, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -23,6 +35,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
             _chatId = _stateMachine.ChatId;
             _serviceScope = serviceScope;
         }
+
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -35,11 +49,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
                 {
                         new KeyboardButton[]
                         {
-                             new KeyboardButton("Пройти опрос"),
+                             new("Пройти опрос"),
                         },
                 }
             )
-            { 
+            {
                 ResizeKeyboard = true
             };
             await _botClient.SendTextMessageAsync(
@@ -49,6 +63,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
                 replyMarkup: replyKeyboard);
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
             if (message.Text == "Пройти опрос")
@@ -57,13 +72,16 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu
             }
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             await _botClient.AnswerCallbackQueryAsync(query.Id);
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
+            return Task.CompletedTask;
         }
     }
 }

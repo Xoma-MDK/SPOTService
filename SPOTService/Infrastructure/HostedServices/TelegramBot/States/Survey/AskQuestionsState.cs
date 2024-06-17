@@ -11,11 +11,20 @@ using Telegram.Bot.Types.ReplyMarkups;
 using SurveyEntity = SPOTService.DataStorage.Entities.Survey;
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
 {
+    /// <summary>
+    /// Состояние опроса, в котором происходит задание вопросов пользователю в Telegram боте.
+    /// </summary>
     public class AskQuestionsState : AAsyncState, IAsyncState
     {
-        private SurveyEntity _surveyEntity;
-        private Dictionary<Question, bool> _questions;
+        private readonly SurveyEntity? _surveyEntity;
+        private readonly Dictionary<Question, bool>? _questions;
         private Question? _questionCurrent;
+
+        /// <summary>
+        /// Конструктор состояния AskQuestionsState для начала опроса.
+        /// </summary>
+        /// <param name="serviceScope">Область провайдера сервисов.</param>
+        /// <param name="survey">Сущность опроса.</param>
         public AskQuestionsState(IServiceProvider serviceScope, SurveyEntity survey)
         {
             _serviceScope = serviceScope;
@@ -23,10 +32,21 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             _questions = _surveyEntity.Questions!
                 .ToDictionary(question => question, _ => false);
         }
+        /// <summary>
+        /// Возвращает текущий вопрос для задания.
+        /// </summary>
+        /// <returns>Текущий вопрос.</returns>
         private Question? GetQuestion()
         {
-            return _questions.FirstOrDefault(q => q.Value == false).Key;
+            return _questions!.FirstOrDefault(q => q.Value == false).Key;
         }
+
+        /// <summary>
+        /// Конструктор состояния AskQuestionsState для начала опроса.
+        /// </summary>
+        /// <param name="serviceScope">Область провайдера сервисов.</param>
+        /// <param name="botClient">Клиент Telegram Bot API.</param>
+        /// <param name="stateMachine">Машина состояний для управления состояниями.</param>
         public AskQuestionsState(IServiceProvider serviceScope, TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -35,6 +55,8 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             _chatId = _stateMachine.ChatId;
             _serviceScope = serviceScope;
         }
+
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -46,6 +68,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
 
 
         }
+        /// <summary>
+        /// Отправляет вопрос пользователю в Telegram.
+        /// </summary>
+        /// <param name="question">Вопрос для отправки.</param>
         private async Task SendQuestion(Question question)
         {
             if (question.IsOpen)
@@ -63,9 +89,11 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 await _botClient.SendTextMessageAsync(_chatId, question.Title, replyMarkup: keyboard);
             }
         }
+
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
-            if (_questionCurrent.IsOpen == false)
+            if (_questionCurrent != null && _questionCurrent.IsOpen == false)
             {
                 await _botClient.SendTextMessageAsync(_chatId, "Извините, этот вопрос только с вариантами ответов!");
             }
@@ -76,7 +104,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 var respondent = mainContext.Respondents.First(r => r.TelegramId == _userId);
                 var answer = new Answer()
                 {
-                    SurveyId = _surveyEntity.Id,
+                    SurveyId = _surveyEntity!.Id,
                     QuestionId = _questionCurrent!.Id,
                     AnswerVariantId = null,
                     RespondentId = respondent.Id,
@@ -91,7 +119,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
                 {
                     Debug.WriteLine(ex.Message, ex.InnerException!.Message);
                 }
-                _questions[_questionCurrent] = true;
+                _questions![_questionCurrent] = true;
                 _questionCurrent = GetQuestion();
                 if (_questionCurrent != null)
                 {
@@ -105,33 +133,34 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             }
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             try
             {
-                if (query.Data!.StartsWith("Question"))
+                if (query.Data != null && query.Data.StartsWith("Question"))
                 {
                     using var scope = _serviceScope.CreateScope();
                     using var mainContext = scope.ServiceProvider.GetRequiredService<MainContext>();
                     await _botClient.AnswerCallbackQueryAsync(query.Id);
-                    var answerVariantId = int.Parse(query.Data!.Split(';')[1].Split(':')[1]);
-                    var questionId = int.Parse(query.Data!.Split(';')[0].Split(':')[1]);
+                    var answerVariantId = int.Parse(query.Data.Split(';')[1].Split(':')[1]);
+                    var questionId = int.Parse(query.Data.Split(';')[0].Split(':')[1]);
                     var respondent = mainContext!.Respondents.First(r => r.TelegramId == _userId);
-                    if(_questionCurrent.Id != questionId)
+                    if (_questionCurrent != null && _questionCurrent.Id != questionId || _questionCurrent == null)
                     {
                         return;
                     }
                     var answer = new Answer()
                     {
-                        SurveyId = _surveyEntity.Id,
+                        SurveyId = _surveyEntity!.Id,
                         QuestionId = questionId,
                         AnswerVariantId = answerVariantId,
                         RespondentId = respondent.Id,
                         OpenAnswer = null
                     };
-                    await mainContext!.AddAsync(answer);
-                    await mainContext!.SaveChangesAsync();
-                    _questions[_questionCurrent] = true;
+                    await mainContext.AddAsync(answer);
+                    await mainContext.SaveChangesAsync();
+                    _questions![_questionCurrent] = true;
                     _questionCurrent = GetQuestion();
                     if (_questionCurrent != null)
                     {
@@ -151,9 +180,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
             }
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
-
+            return Task.CompletedTask;
         }
     }
 }

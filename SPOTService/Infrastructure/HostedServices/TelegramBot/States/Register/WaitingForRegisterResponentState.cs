@@ -8,8 +8,12 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
-    public class WaitingForRegisterResponentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
+    /// <summary>
+    /// Состояние ожидания регистрации опрашиваемого.
+    /// </summary>
+    public class WaitingForRegisterRespondentState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -39,21 +43,26 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                     "Хотите ли вы зарегистрироваться?\n" +
                     "Или желаете пройти опрос анонимно?",
                     replyMarkup: inlineKeyboard);
-                await _stateMachine.ChangeStateAsync(new RegisterResponentState(_stateMachine.ServiceScope));
+                await _stateMachine.ChangeStateAsync(new RegisterRespondentState(_stateMachine.ServiceScope));
             }
         }
 
-        public async Task ExecuteAsync(Message message)
+        /// <inheritdoc/>
+        public Task ExecuteAsync(Message message)
         {
+            return Task.CompletedTask;
         }
 
-        public async Task ExecuteAsync(CallbackQuery query)
+        /// <inheritdoc/>
+        public Task ExecuteAsync(CallbackQuery query)
         {
-
+            return Task.CompletedTask;
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
+            return Task.CompletedTask;
         }
     }
 }

@@ -8,8 +8,12 @@ using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
+    /// <summary>
+    /// Состояние ожидания ввода фамилии опрашиваемого.
+    /// </summary>
     public class WaitingEnterSurnameState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -20,6 +24,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             await _botClient.SendTextMessageAsync(_chatId, "Хорошо, тогда напиши свою фамилию!");
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
             if (message.Text != "")
@@ -51,14 +56,16 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             }
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             await _botClient.AnswerCallbackQueryAsync(query.Id);
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
-
+            return Task.CompletedTask;
         }
     }
 }

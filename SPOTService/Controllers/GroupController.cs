@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using SPOTService.DataStorage.Repositories;
-using SPOTService.DataStorage;
-using SPOTService.Infrastructure.InternalServices.Auth;
 using Microsoft.AspNetCore.Authorization;
-using SPOTService.Dto.User;
-using SPOTService.Infrastructure.InternalServices.Auth.Constants;
-using SPOTService.Dto.Groups;
+using Microsoft.AspNetCore.Mvc;
 using SPOTService.DataStorage.Entities;
-using Telegram.Bot.Types;
+using SPOTService.DataStorage.Repositories;
+using SPOTService.Dto.Groups;
+using SPOTService.Infrastructure.InternalServices.Auth.Constants;
 
 namespace SPOTService.Controllers
 {
@@ -70,11 +66,11 @@ namespace SPOTService.Controllers
         [HttpGet]
         public async Task<IActionResult> GetGroups()
         {
-            
+
             try
             {
                 _logger.LogInformation("Try get groups");
-                return Ok( (await _repository.GetAllAsync())
+                return Ok((await _repository.GetAllAsync())
                     .Select(_mapper.Map<Group, GroupOutputDto>)
                     .ToList());
             }

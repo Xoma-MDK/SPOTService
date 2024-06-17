@@ -4,9 +4,16 @@ using SPOTService.Dto.Answers;
 
 namespace SPOTService.Profiles
 {
+    /// <summary>
+    /// Профиль AutoMapper для маппинга модели Answer на DTO AnswerOutputDto.
+    /// </summary>
     public class AnswerProfile : Profile
     {
-        public AnswerProfile() {
+        /// <summary>
+        /// Конструктор профиля маппинга AnswerProfile.
+        /// </summary>
+        public AnswerProfile()
+        {
             CreateMap<Answer, AnswerOutputDto>();
         }
     }

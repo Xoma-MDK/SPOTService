@@ -9,8 +9,12 @@ using SPOTService.Infrastructure.HostedServices.TelegramBot.States.Menu;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
+    /// <summary>
+    /// Состояние завершения регистрации.
+    /// </summary>
     public class EndingForRegisterState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -28,6 +32,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             await _botClient.SendTextMessageAsync(_chatId, "Выбери свою группу:", replyMarkup: keyboard);
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
             using var scope = _serviceScope.CreateScope();
@@ -44,6 +49,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                 );
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             if (query.Data!.StartsWith("Group"))
@@ -74,8 +80,10 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             }
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
+            return Task.CompletedTask;
         }
     }
 }

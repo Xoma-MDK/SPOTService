@@ -25,9 +25,9 @@ namespace SPOTService.Controllers
     [ApiController]
     [Route("users")]
     public class UserController(
-        ILogger<UserController> logger, 
-        IAuthService authService, 
-        MainContext mainContext, 
+        ILogger<UserController> logger,
+        IAuthService authService,
+        MainContext mainContext,
         IMapper mapper,
         UserRepository repository,
         RoleRepository roleRepository
@@ -39,7 +39,7 @@ namespace SPOTService.Controllers
         private readonly IMapper _mapper = mapper;
         private readonly UserRepository _repository = repository;
         private readonly RoleRepository _roleRepository = roleRepository;
-        
+
         // GET <UserController>/{id}
         /// <summary>
         /// Получить все роли
@@ -136,7 +136,7 @@ namespace SPOTService.Controllers
                 _logger.LogError("Error: {}", ex.Message);
                 return BadRequest(ex.Message);
             }
-        }        
+        }
         // Put <SurveyController>/register
         /// <summary>
         /// Обновить пользователя
@@ -153,8 +153,16 @@ namespace SPOTService.Controllers
                 var staff = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
                 if (staff == null || staff.RoleId != 1)
                     return Forbid();
-                var user = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
-                user = _mapper.Map<UserInputDto, User>(userInput);
+                var user = await _mainContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                    return BadRequest();
+                user.Surname = userInput.Surname;
+                user.Name = userInput.Name;
+                user.Patronomyc = userInput.Patronomyc;
+                user.Login = userInput.Login;
+                user.RoleId = userInput.RoleId;
+                user.Role = null;
+                _mainContext.Update(user);
                 await _mainContext.SaveChangesAsync();
                 var userOutputDto = _mapper.Map<User, UserOutputDto>(user!);
                 return Ok(userOutputDto);
@@ -210,8 +218,8 @@ namespace SPOTService.Controllers
         /// Выйти из системы
         /// </summary>
         /// <remarks>Запрос для выхода из системы</remarks>
-        /// <response code="200">Успешно созданы токены авторизации пользователя по Refresh токену</response>
-        /// <response code="400">Ошибка при создании токенов авторизации пользователя по Refresh токену</response>
+        /// <response code="200">Успешно выполнен выход из системы</response>
+        /// <response code="400">Ошибка при выходе из системы</response>
         [Authorize(AuthPolicy.AccessPolicy)]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
@@ -223,6 +231,32 @@ namespace SPOTService.Controllers
 
                     await _authService.Logout(token.ToString().Split(' ')[1]);
                 }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error: {}", ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // DELETE <SurveyController>/<Id>
+        /// <summary>
+        /// Удалить пользователя
+        /// </summary>
+        /// <remarks>Запрос для удаления пользователя</remarks>
+        /// <response code="200">Успешно удален пользователь</response>
+        /// <response code="400">Ошибка при удалении пользователя</response>
+        [Authorize(AuthPolicy.AccessPolicy)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id, [FromHeader] int? UserId)
+        {
+            try
+            {
+                var staff = await _mainContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == UserId);
+                if (staff == null || staff.RoleId != 1 || staff.Id == id)
+                    return Forbid();
+                var user = await _repository.DeleteAsync(id);
                 return Ok();
             }
             catch (Exception ex)

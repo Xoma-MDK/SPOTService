@@ -1,6 +1,4 @@
 ﻿using SPOTService.DataStorage.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SPOTService.DataStorage.Repositories
 {

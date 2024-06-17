@@ -6,8 +6,12 @@ using Telegram.Bot.Types;
 
 namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
 {
+    /// <summary>
+    /// Состояние ожидания ввода имени опрашиваемого.
+    /// </summary>
     public class WaitingEnterNameState(IServiceProvider serviceScope) : AAsyncState, IAsyncState
     {
+        /// <inheritdoc/>
         public async Task EnterAsync(TelegramBotClient botClient, IAsyncStateMachine stateMachine)
         {
             _botClient = botClient;
@@ -18,6 +22,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             await _botClient.SendTextMessageAsync(_chatId, "Отлично, теперь напиши свое имя!");
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(Message message)
         {
             if (message.Text != "")
@@ -32,7 +37,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
                     mainContext.Update(respondent);
                     await mainContext.SaveChangesAsync();
                 }
-                await _stateMachine.ChangeStateAsync(new WaitingEnterPatronomycState(_stateMachine.ServiceScope));
+                await _stateMachine.ChangeStateAsync(new WaitingEnterPatronymicState(_stateMachine.ServiceScope));
             }
             else
             {
@@ -40,14 +45,16 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Register
             }
         }
 
+        /// <inheritdoc/>
         public async Task ExecuteAsync(CallbackQuery query)
         {
             await _botClient.AnswerCallbackQueryAsync(query.Id);
         }
 
-        public async Task ExitAsync()
+        /// <inheritdoc/>
+        public Task ExitAsync()
         {
-
+            return Task.CompletedTask;
         }
     }
 }
