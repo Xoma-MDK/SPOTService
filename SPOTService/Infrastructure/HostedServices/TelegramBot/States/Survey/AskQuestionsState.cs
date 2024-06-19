@@ -76,7 +76,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot.States.Survey
         {
             if (question.IsOpen)
             {
-                await _botClient.SendTextMessageAsync(_chatId, question.Title);
+                await _botClient.SendTextMessageAsync(_chatId, question.Title + "\n\nЭто открытый вопрос, напишите свой ответ в сообщении и отправьте его");
             }
             else
             {

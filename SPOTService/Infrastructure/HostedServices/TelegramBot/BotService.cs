@@ -111,6 +111,7 @@ namespace SPOTService.Infrastructure.HostedServices.TelegramBot
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
+
         /// <summary>
         /// Обработчик сообщений от пользователя.
         /// </summary>
